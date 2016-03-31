@@ -3,13 +3,11 @@ library("latentnet")
 
 create_network <- function(y, X, name = "eweight") {
   library("network")
-  
   net <- network(y, directed = FALSE)
   el <- as.matrix(net, "edgelist")
   w <- y[el]
   set.edge.attribute(net, name, w)
-  for (i in 1:length(X))
-    net %e% names(X) <- X[[i]]
+  net %e% "X" <- X
   net
 }
 
@@ -34,13 +32,6 @@ ms_error <- function(x, y, each_column = FALSE) {
     sapply((x - y)^2, mean)
   else
     mean((x - y)^2)
-}
-
-sign_error <- function(x, y, each_column = TRUE) {
-  if (each_column)
-    sapply(sign(x) != sign(y), mean)
-  else
-    mean(sign(x) != sign(y))
 }
 
 unstack_vector <- function(x, n) {
@@ -80,7 +71,7 @@ create_data <- function(static, family, eta, nodes, beta, latent_space) {
                     poisson = rpois(length(lp), exp(lp)))
   y <- unstack_vector(y_stack, nodes)
   X_stack <- data.frame(X)
-  X <- lapply(as.list(X_stack), function(x) unstack_vector(x, nodes))
+  X <- unstack_vector(X, nodes)
   y_stack_new <- switch(family,
                         gaussian = rnorm(length(lp), lp, static$sigma),
                         binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
@@ -108,24 +99,28 @@ lsm.wrapper <- function(static, dynamic, ...) {
   library("coda")
 
   dots <- list(...)
-  
+
   net <- create_network(dynamic$y, dynamic$X)
+  .GlobalEnv$net <- net ## fuck you latentet
+
   lf <- c("gaussian" = "Gaussian", "binomial" = "Bernoulli", "poisson" = "Poisson")
 
   if (dots$scale) {
     glm_fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
     prior_variance <- (abs(coef(glm_fit)[2]) * var(dynamic$X_stack)) / (2 - 4 / pi)
     prior_variance <- unname(as.numeric(prior_variance))
-  } 
+    prior <- ergmm.prior("Z.var" = prior_variance, ...)
+  } else {
+    prior <- ergmm.prior(...)
+  }
 
-  prior <- if (dots$scale) ergmm.prior("Z.var" = prior_variance) else ergmm.prior()
   fam.par <- list("prior.var" = static$sigma, "prior.var.df" = dynamic$nodes)
   if (dynamic$family != "gaussian") fam.par <- NULL
 
   flag <- TRUE
   iter <- 1
   while (flag) {
-    fit <- ergmm(net ~ edgecov("X") + euclidean(d = 1),
+    fit <- ergmm(net ~ edgecov(net, "X") + euclidean(d = 1),
                  "eweight", unname(lf[names(lf) %in% dynamic$family]),
                  fam.par = fam.par, prior = prior,
                  tofit = c("mcmc", "pmode"), seed = static$seed,
@@ -184,7 +179,8 @@ problem.pars <- list(
 
 problem.design <- makeDesign("test", exhaustive = problem.pars)
 
-lsm.pars <- list("scale" = c(TRUE, FALSE))
+lsm.pars <- list("scale" = c(TRUE, FALSE),
+                 "beta.var" = c(1, 10, 100))
 glm.pars <- list()
 
 lsm.design <- makeDesign("lsm", exhaustive = lsm.pars)
@@ -232,7 +228,7 @@ reduce <- function(job, res) {
 }
 
 done <- summarizeExperiments(reg, findDone(reg),
-                             show = c("algo", "scale", "family", "eta", "nodes", "beta", "latent_space"))
+                             show = c("algo", "scale", "beta.var", "family", "eta", "nodes", "beta", "latent_space"))
 write.csv(done, "done.csv")
 results <- reduceResultsExperiments(reg, fun = reduce)
 write.csv(results, "results.csv")
