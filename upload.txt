@@ -1,4 +1,3 @@
 simulation.R
 .BatchJobs.R
 template.tmpl
-reg/

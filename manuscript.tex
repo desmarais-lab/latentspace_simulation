@@ -198,7 +198,7 @@ To study how the LSM behaves in the situation in which we have some observed cov
 
 We consider three exponential family distributions for the edges: Gaussian, Binomial, and Poisson. Additionally we control the number of nodes in the network $n = 25, 50, 100$, fix the dimension of the latent space $k$ at 1 for simplicity, and consider 5 values of the collinearity parameter $\eta$, equally spaced between $.75$ and $100$, where $.75$ corresponds to near perfect collinearity and $100$ to independence.
 
-We standardize $X$ to have a variance of $1$ and a mean of $0$, and the linear predictor, $X \beta - d$
+We standardize $X$ to have a variance of $1$ and a mean of $0$.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{max_r_vine.png}
@@ -207,7 +207,7 @@ We standardize $X$ to have a variance of $1$ and a mean of $0$, and the linear p
 
 Each step in the simulation involves the estimation of a GLM, the LSM, and the LSM with a prior on the latent space which is scaled by $\hat{\beta_1}^2\alpha^2/(2-4/\pi)$, where $\alpha^2$ is the empirical variance of $X$. At each step in the simulation, the LSM is estimated using the canonical implementation in the \texttt{latentnet} package in \texttt{R}. An initial run of 10,000 burn in iterations, followed by 1,000,000 iterations of the sampler. Every 100th iteration is saved. Convergence in the log probability of the model is assessed using the Geweke diagnostic. If the convergence criteria is satisfied the simulation continues to the next set of arguments, otherwise the number of iterations is doubled. If the convergence criteria is still not satisfied, then the aforementioned step in the simulation is flagged for review. At each point in the simulation's parameter space, we execute 500 Monte Carlo iterations.
 
-We first compute the MLE estimated by iteratively reweighted least squares in \texttt{R}. For the LSM we use the posterior mode. In the cases where edges are Binomial or Poisson distributed, we scale the estiamtes % figure out how to do this.
+We first compute the MLE estimated by iteratively reweighted least squares in \texttt{R}. For the LSM we use the posterior mode. In the cases where edges are Binomial distributed, we scale the estiamtes using the reciprocal of the bias of $\beta_1$ when $X$ and $d$ are independent: $\\frac{\sqrt{3.28 + \beta_2^2 \text{Var(d)}}}{\sqrt{3.29}}$, where $3.29$ is the variance of a standard logistic distribution \cite{mood2010logistic}.
 
 To evaluate estimation error we compute the bias: the difference between the true coefficient $\beta_1$ and the estimate. Figure \ref{fig:estimation} shows the results. When a latent space is present (i.e., $\beta_2 = -1$) the LSM outperforms the GLM in terms of bias across the board. However, when latent network structure is not present ($\beta_2 = 0$) the LSM is sharply biased downwards, indicating that the latent space is representing variability in the edges that is attributable to the observed covariate $X$.
 
