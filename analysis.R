@@ -6,7 +6,8 @@ results <- read.csv("results.csv", stringsAsFactors = FALSE) %>%
   rename(model = algo)
 
 results$model <- ifelse(!is.na(results$scale) & results$scale, "lsm_scaled", results$model)
-
+results$model <- ifelse(!is.na(results$beta.var), paste0(results$model, " (beta.var = ", results$beta.var, ")"),
+                        results$model)
 results$bias <- results$estimate - results$beta
 results$error <- ifelse(results$beta == 0, 1 - results$coverage, results$coverage)
 results$type <- ifelse(results$beta == 0, 1, 2)
@@ -27,8 +28,8 @@ ggplot(results[results$beta == 1, ], aes(eta, bias, color = model, linetype = mo
 ggsave("estimation.png", width = 10, height = 8)
 
 ggplot(results, aes(eta, error, color = model, linetype = model)) +
+  scale_x_log10() + 
   stat_smooth(method = "loess", se = TRUE) +
   facet_grid(family + type ~ nodes + latent_space, scales = "free", labeller = label_context) +
-  labs(x = expression(eta), y = expression(paste("Error rate at ", alpha, " = .05"))) +
-  scale_x_log10()
+  labs(x = expression(eta), y = expression(paste("Error rate at ", alpha, " = .05")))
 ggsave("inference.png", width = 10, height = 8)

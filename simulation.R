@@ -109,7 +109,7 @@ lsm.wrapper <- function(static, dynamic, ...) {
     glm_fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
     prior_variance <- (abs(coef(glm_fit)[2]) * var(dynamic$X_stack)) / (2 - 4 / pi)
     prior_variance <- unname(as.numeric(prior_variance))
-    prior <- ergmm.prior("Z.var" = prior_variance, ...)
+    prior <- ergmm.prior("Z.var" = prior_variance)
   } else {
     prior <- ergmm.prior(...)
   }
@@ -205,7 +205,7 @@ while(!done) {
   ## find how many chunked jobs are running
   r <- as.integer(system("qstat -u zmj102 | wc -l", intern = TRUE))
   submitJobs(reg, chunk(ids, chunk.size = 10)[seq_len(max(80 - r, 0))], resources)
-  Sys.sleep(300)
+  Sys.sleep(60)
 
   if (getJobNr(reg) == length(findDone(reg)))
     done <- TRUE
