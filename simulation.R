@@ -180,7 +180,7 @@ problem.pars <- list(
 problem.design <- makeDesign("test", exhaustive = problem.pars)
 
 lsm.pars <- list("scale" = c(TRUE, FALSE),
-                 "beta.var" = c(1, 10, 100))
+                 "beta.var" = c(1, 10))
 glm.pars <- list()
 
 lsm.design <- makeDesign("lsm", exhaustive = lsm.pars)
@@ -190,7 +190,7 @@ addAlgorithm(reg, "lsm", lsm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "glm", glm.wrapper, overwrite = TRUE)
 
 addExperiments(reg, problem.design, list("lsm" = lsm.design, "glm" = glm.design),
-               repls = 10, skip.defined = TRUE)
+               repls = 100, skip.defined = TRUE)
 batchExport(reg, create_network = create_network, ms_error = ms_error,
             rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
             overwrite = TRUE)
