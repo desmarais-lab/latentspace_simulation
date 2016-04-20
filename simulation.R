@@ -1,13 +1,12 @@
 library("BatchExperiments")
 library("latentnet")
 
-create_network <- function(y, X, name = "eweight") {
+create_network <- function(y, name = "eweight") {
   library("network")
   net <- network(y, directed = FALSE)
   el <- as.matrix(net, "edgelist")
   w <- y[el]
   set.edge.attribute(net, name, w)
-  net %e% "X" <- X
   net
 }
 
@@ -100,8 +99,8 @@ lsm.wrapper <- function(static, dynamic, ...) {
 
   dots <- list(...)
 
-  net <- create_network(dynamic$y, dynamic$X)
-  .GlobalEnv$net <- net ## fuck you latentet
+  net <- create_network(dynamic$y)
+  .GlobalEnv$X <- dynamic$X ## fuck you latentet
 
   lf <- c("gaussian" = "Gaussian", "binomial" = "Bernoulli", "poisson" = "Poisson")
 
@@ -120,7 +119,7 @@ lsm.wrapper <- function(static, dynamic, ...) {
   flag <- TRUE
   iter <- 1
   while (flag) {
-    fit <- ergmm(net ~ edgecov(net, "X") + euclidean(d = 1),
+    fit <- ergmm(net ~ edgecov(X) + euclidean(d = 1),
                  "eweight", unname(lf[names(lf) %in% dynamic$family]),
                  fam.par = fam.par, prior = prior,
                  tofit = c("mcmc", "pmode"), seed = static$seed,
@@ -190,25 +189,20 @@ addAlgorithm(reg, "lsm", lsm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "glm", glm.wrapper, overwrite = TRUE)
 
 addExperiments(reg, problem.design, list("lsm" = lsm.design, "glm" = glm.design),
-               repls = 100, skip.defined = TRUE)
+               repls = 500, skip.defined = TRUE)
 batchExport(reg, create_network = create_network, ms_error = ms_error,
             rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
             overwrite = TRUE)
 
-resources <- list(walltime = 86400L, nodes = 1L, memory = "2gb")
+resources <- list(walltime = 86400L, nodes = 1L, memory = "8gb")
 
-done <- FALSE
-ids <- findNotStarted(reg)
-
-while(!done) {
+while (getJobNr(reg) > length(findDone(reg))) {
+  ids <- findNotStarted(reg)
   ids <- ids[!ids %in% findOnSystem(reg)]
   ## find how many chunked jobs are running
-  r <- as.integer(system("qstat -u zmj102 | wc -l", intern = TRUE))
-  submitJobs(reg, chunk(ids, chunk.size = 10)[seq_len(max(80 - r, 0))], resources)
-  Sys.sleep(60)
-
-  if (getJobNr(reg) == length(findDone(reg)))
-    done <- TRUE
+  r <- as.integer(system("qstat -u zmj102 -r | wc -l", intern = TRUE))
+  submitJobs(reg, chunk(ids, chunk.size = 50)[seq_len(max(40 - r, 0))], resources)
+  Sys.sleep(60 * 5)
 }
 
 reduce <- function(job, res) {
@@ -227,8 +221,43 @@ reduce <- function(job, res) {
   )
 }
 
-done <- summarizeExperiments(reg, findDone(reg),
+## reduce_nothing <- function(job, res) {
+##   list("fit" = res$fit,
+##        "data" = res$data)
+## }
+
+## id <- findExperiments(reg, algo.pattern = "lsm",
+##                       algo.pars = (scale == FALSE & beta.var == 100),
+##                       prob.pars = (nodes == 100 & eta == 1000000 & family == "binomial" &
+##                                      beta == 1 & latent_space == -1),
+##                       repls = 1)
+## one_iter <- reduceResultsList(reg, id, fun = reduce_nothing)[[1]]
+## save(one_iter, file = "one_iter.RData")
+
+done <- summarizeExperiments(reg, findErrors(reg),
                              show = c("algo", "scale", "beta.var", "family", "eta", "nodes", "beta", "latent_space"))
 write.csv(done, "done.csv")
-results <- reduceResultsExperiments(reg, fun = reduce)
+
+## necessary for a weird bug
+ids <- chunk(unique(findDone(reg)), 500)
+results <- vector("list", length(ids))
+for (i in 1:length(ids)) {
+  try(results[[i]] <- reduceResultsExperiments(reg, ids[[i]], fun = reduce, progressbar = FALSE))
+}
+results <- do.call("rbind", results)
 write.csv(results, "results.csv")
+
+## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
+## d and X_stack
+eta_hist <- foreach(eta = c(.1, 1, 100, 1000000), .combine = "rbind") %:%
+  foreach(icount(1000), .combine = "rbind") %do% {
+  c(eta, abs(cov2cor(genPositiveDefMat(2, "c-vine", eta = eta)$Sigma))[1, 2])
+}
+
+eta_hist <- data.frame(eta_hist)
+colnames(eta_hist) <- c("eta", "cor")
+p <- ggplot(eta_hist, aes(x = cor))
+p <- p + geom_histogram()
+p <- p + facet_wrap(~ eta)
+p <- p + xlab("off-diagonal correlation") + ylab("count (mc = 1000)")
+ggsave("max_r_vine.png", width = 6, height = 6)
