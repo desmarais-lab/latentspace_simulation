@@ -1,3 +1,2 @@
 results.csv
 done.csv
-one_iter.RData

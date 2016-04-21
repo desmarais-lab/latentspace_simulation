@@ -221,19 +221,6 @@ reduce <- function(job, res) {
   )
 }
 
-## reduce_nothing <- function(job, res) {
-##   list("fit" = res$fit,
-##        "data" = res$data)
-## }
-
-## id <- findExperiments(reg, algo.pattern = "lsm",
-##                       algo.pars = (scale == FALSE & beta.var == 100),
-##                       prob.pars = (nodes == 100 & eta == 1000000 & family == "binomial" &
-##                                      beta == 1 & latent_space == -1),
-##                       repls = 1)
-## one_iter <- reduceResultsList(reg, id, fun = reduce_nothing)[[1]]
-## save(one_iter, file = "one_iter.RData")
-
 done <- summarizeExperiments(reg, findErrors(reg),
                              show = c("algo", "scale", "beta.var", "family", "eta", "nodes", "beta", "latent_space"))
 write.csv(done, "done.csv")
