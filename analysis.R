@@ -47,6 +47,6 @@ ggplot(results[results$type == 2, ], aes(eta, error, color = model, linetype = m
   scale_x_log10(label = scientific_format()) + 
   geom_point() + geom_line() +
   facet_grid(family ~ nodes + latent_space, scales = "free", labeller = label_context) +
-  labs(x = expression(eta), y = expression(paste("Type 1 Error rate at ", alpha, " = .05")),
+  labs(x = expression(eta), y = expression(paste("Type 2 Error rate at ", alpha, " = .05")),
        title = "Type-2 Inferential Error")
 ggsave("inference_type_2.png", width = 12, height = 8)

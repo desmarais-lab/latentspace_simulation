@@ -194,16 +194,11 @@ batchExport(reg, create_network = create_network, ms_error = ms_error,
             rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
             overwrite = TRUE)
 
-resources <- list(walltime = 86400L, nodes = 1L, memory = "8gb")
+resources <- list(walltime = 86400L * 2, nodes = 1L, memory = "8gb")
 
-while (getJobNr(reg) > length(findDone(reg))) {
-  ids <- findNotStarted(reg)
-  ids <- ids[!ids %in% findOnSystem(reg)]
-  ## find how many chunked jobs are running
-  r <- as.integer(system("qstat -u zmj102 -r | wc -l", intern = TRUE))
-  submitJobs(reg, chunk(ids, chunk.size = 50)[seq_len(max(40 - r, 0))], resources)
-  Sys.sleep(60 * 5)
-}
+ids <- findNotStarted(reg)
+ids <- ids[!ids %in% findOnSystem(reg)]
+submitJobs(reg, chunk(ids, chunk.size = floor(c(100, round(length(ids) * .05)))), resources)
 
 reduce <- function(job, res) {
   if (any(class(res$fit) == "glm") & res$data$latent_space == -1 & res$data$family == "binomial") {
@@ -224,14 +219,8 @@ reduce <- function(job, res) {
 done <- summarizeExperiments(reg, findErrors(reg),
                              show = c("algo", "scale", "beta.var", "family", "eta", "nodes", "beta", "latent_space"))
 write.csv(done, "done.csv")
-
-## necessary for a weird bug
-ids <- chunk(unique(findDone(reg)), 500)
-results <- vector("list", length(ids))
-for (i in 1:length(ids)) {
-  try(results[[i]] <- reduceResultsExperiments(reg, ids[[i]], fun = reduce, progressbar = FALSE))
-}
-results <- do.call("rbind", results)
+res <- reduceResultsExperiments(reg, unique(findDone(reg)),
+                                fun = reduce, impute.val = list("estimate" = NA, "loss" = NA, "coverage" = NA))
 write.csv(results, "results.csv")
 
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
