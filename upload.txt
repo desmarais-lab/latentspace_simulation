@@ -1,3 +1,4 @@
 simulation.R
+reduce.R
 .BatchJobs.R
 template.tmpl

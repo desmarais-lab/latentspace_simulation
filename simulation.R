@@ -200,29 +200,6 @@ ids <- findNotStarted(reg)
 ids <- ids[!ids %in% findOnSystem(reg)]
 submitJobs(reg, chunk(ids, chunk.size = floor(c(100, round(length(ids) * .05)))), resources)
 
-reduce <- function(job, res) {
-  if (any(class(res$fit) == "glm") & res$data$latent_space == -1 & res$data$family == "binomial") {
-    estimate <- res$estimate * res$adjustment
-    coverage <- unname(ifelse(res$interval[1] * res$adjustment < 0 & res$interval[2] * res$adjustment > 0, 1, 0))
-  } else {
-    estimate <- res$estimate
-    coverage <- unname(ifelse(res$interval[1] < 0 & res$interval[2] > 0, 1, 0))
-  }
-  
-  list(
-    "estimate" = estimate,
-    "loss" = res$loss,
-    "coverage" = coverage
-  )
-}
-
-done <- summarizeExperiments(reg, findErrors(reg),
-                             show = c("algo", "scale", "beta.var", "family", "eta", "nodes", "beta", "latent_space"))
-write.csv(done, "done.csv")
-res <- reduceResultsExperiments(reg, unique(findDone(reg)),
-                                fun = reduce, impute.val = list("estimate" = NA, "loss" = NA, "coverage" = NA))
-write.csv(results, "results.csv")
-
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
 eta_hist <- foreach(eta = c(.1, 1, 100, 1000000), .combine = "rbind") %:%
