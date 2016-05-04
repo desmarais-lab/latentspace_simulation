@@ -1,5 +1,6 @@
 library("BatchExperiments")
 library("latentnet")
+library("foreach")
 
 create_network <- function(y, name = "eweight") {
   library("network")
@@ -162,7 +163,21 @@ glm.wrapper <- function(static, dynamic, ...) {
   )
 }
 
-reg <- makeExperimentRegistry("lsm_applications", "reg")
+truth.wrapper <- function(static, dynamic, ...) {
+  fit <- glm(y ~ X + d, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack, "d" = dynamic$d))
+  pred <- predict(fit, newdata = data.frame(dynamic$X_stack, "d" = dynamic$d), se.fit = TRUE)
+  list(
+    "pred" = pred,
+    "estimate" = unname(coef(fit)[2]),
+    "adjustment" = sqrt(3.29 + var(dynamic$d)) / sqrt(3.29),
+    "interval" = confint(fit, colnames(dynamic$X_stack)),
+    "loss" = ms_error(pred$fit, dynamic$y_stack_new),
+    "data" = dynamic,
+    "fit" = fit
+  )
+}
+
+reg <- makeExperimentRegistry("lsm", "reg")
 
 addProblem(reg, "test", dynamic = create_data, seed = 1234, overwrite = TRUE,
            static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
@@ -181,24 +196,27 @@ problem.design <- makeDesign("test", exhaustive = problem.pars)
 lsm.pars <- list("scale" = c(TRUE, FALSE),
                  "beta.var" = c(1, 10))
 glm.pars <- list()
+truth.pars <- list()
 
 lsm.design <- makeDesign("lsm", exhaustive = lsm.pars)
 glm.design <- makeDesign("glm", exhaustive = glm.pars)
+truth.design <- makeDesign("truth", exhaustive = truth.pars)
 
 addAlgorithm(reg, "lsm", lsm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "glm", glm.wrapper, overwrite = TRUE)
+addAlgorithm(reg, "truth", truth.wrapper, overwrite = TRUE)
 
-addExperiments(reg, problem.design, list("lsm" = lsm.design, "glm" = glm.design),
+addExperiments(reg, problem.design, list("lsm" = lsm.design, "glm" = glm.design, "truth" = truth.design),
                repls = 500, skip.defined = TRUE)
 batchExport(reg, create_network = create_network, ms_error = ms_error,
             rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
             overwrite = TRUE)
 
-resources <- list(walltime = 86400L * 2, nodes = 1L, memory = "8gb")
+resources <- list(walltime = 86400L * 5, nodes = 1L, memory = "8gb")
 
 ids <- findNotStarted(reg)
 ids <- ids[!ids %in% findOnSystem(reg)]
-submitJobs(reg, chunk(ids, chunk.size = floor(c(100, round(length(ids) * .05)))), resources)
+submitJobs(reg, chunk(ids, n.chunks = 1000, shuffle = TRUE)[1:100], resources)
 
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
