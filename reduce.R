@@ -1,5 +1,5 @@
 library(BatchExperiments)
-library(plyr)
+library(plyr) ## for rbind.fill
 
 reg_open <- loadRegistry("reg")
 reg_bruce <- loadRegistry("../lsm_bruce/reg")
