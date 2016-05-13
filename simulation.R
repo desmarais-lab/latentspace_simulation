@@ -151,7 +151,7 @@ lsm.wrapper <- function(static, dynamic, ...) {
 
 glm.wrapper <- function(static, dynamic, ...) {
   fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
-  pred <- predict(fit, newdata = dynamic$X_stack, se.fit = TRUE)
+  pred <- predict(fit, newdata = dynamic$X_stack, se.fit = TRUE, type = "response")
   list(
     "pred" = pred,
     "estimate" = unname(coef(fit)[2]),
@@ -165,7 +165,7 @@ glm.wrapper <- function(static, dynamic, ...) {
 
 truth.wrapper <- function(static, dynamic, ...) {
   fit <- glm(y ~ X + d, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack, "d" = dynamic$d))
-  pred <- predict(fit, newdata = data.frame(dynamic$X_stack, "d" = dynamic$d), se.fit = TRUE)
+  pred <- predict(fit, newdata = data.frame(dynamic$X_stack, "d" = dynamic$d), se.fit = TRUE, type = "response")
   list(
     "pred" = pred,
     "estimate" = unname(coef(fit)[2]),
