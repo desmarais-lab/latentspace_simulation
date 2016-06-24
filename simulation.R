@@ -1,6 +1,8 @@
 library("BatchExperiments")
 library("latentnet")
 library("foreach")
+library("clusterGeneration")
+library("iterators")
 
 create_network <- function(y, name = "eweight") {
   library("network")
@@ -141,7 +143,7 @@ lsm.wrapper <- function(static, dynamic, ...) {
   list(
     "pred" = pred,
     "estimate" = fit$mcmc.pmode$beta[2],
-    "interval" =  HPDinterval(as.mcmc(fit$sample$beta[, 2])),
+    "interval" = HPDinterval(as.mcmc(fit$sample$beta[, 2])),
     "loss" = ms_error(pred, dynamic$y_new),
     "convergence" = geweke,
     "data" = dynamic,
@@ -212,15 +214,18 @@ batchExport(reg, create_network = create_network, ms_error = ms_error,
             rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
             overwrite = TRUE)
 
-resources <- list(walltime = 86400L * 5, nodes = 1L, memory = "8gb")
+resources <- list(walltime = 86400L * 1, nodes = 1L, memory = "8gb")
+
+## from earlier version
+removeExperiments(reg, findExperiments(reg, prob.pars = (eta < 1)))
 
 ids <- findNotStarted(reg)
 ids <- ids[!ids %in% findOnSystem(reg)]
-submitJobs(reg, chunk(ids, n.chunks = 1000, shuffle = TRUE)[1:100], resources)
+submitJobs(reg, chunk(ids, n.chunks = 80, shuffle = TRUE), resources)
 
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
-eta_hist <- foreach(eta = c(.1, 1, 100, 1000000), .combine = "rbind") %:%
+eta_hist <- foreach(eta = c(1, 100, 1000000), .combine = "rbind") %:%
   foreach(icount(1000), .combine = "rbind") %do% {
   c(eta, abs(cov2cor(genPositiveDefMat(2, "c-vine", eta = eta)$Sigma))[1, 2])
 }
@@ -229,6 +234,8 @@ eta_hist <- data.frame(eta_hist)
 colnames(eta_hist) <- c("eta", "cor")
 p <- ggplot(eta_hist, aes(x = cor))
 p <- p + geom_histogram()
-p <- p + facet_wrap(~ eta)
-p <- p + xlab("off-diagonal correlation") + ylab("count (mc = 1000)")
-ggsave("max_r_vine.png", width = 6, height = 6)
+p <- p + facet_wrap(~ eta, nrow = 1)
+p <- p + labs(x = "off-diagonal correlation", y = "count (mc = 1000)",
+              title = "distribution of correlations")
+p <- p + theme_bw()
+ggsave("max_r_vine.png", width = 8, height = 3)

@@ -1,14 +1,13 @@
 TEXCMD := pdflatex -interaction=batchmode
 
+all: graphs manuscript.pdf
+
 upload:
 	rsync -azv --delete --files-from=upload.txt $(PWD) zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce
 
 download:
 	rm -rf reg
-	rsync -azv --files-from=download.txt zmj102@aci-b.aci.ics.psu.edu:work/lsm_open $(PWD)
-
-slides.pdf: slides.md
-	pandoc -t beamer $< -o $@ --latex-engine=xelatex
+	rsync -azv --files-from=download.txt zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce $(PWD)
 
 graphs:
 	rscript analysis.R
