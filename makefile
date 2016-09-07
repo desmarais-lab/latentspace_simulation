@@ -3,7 +3,7 @@ TEXCMD := pdflatex -interaction=batchmode
 all: graphs manuscript.pdf
 
 upload:
-	rsync -azv --delete --files-from=upload.txt $(PWD) zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce
+	rsync -azv --delete --files-from=upload.txt $(PWD) zmj102@aci-b.aci.ics.psu.edu:work/lsm_applications
 
 download:
 	rm -rf reg
