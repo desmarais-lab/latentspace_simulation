@@ -7,10 +7,10 @@ upload:
 
 download:
 	rm -rf reg
-	rsync -azv --files-from=download.txt zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce $(PWD)
+g	rsync -azv --files-from=download.txt zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce $(PWD)
 
 graphs:
-	rscript analysis.R
+	rscript src/analysis.R
 
 manuscript.pdf: manuscript.tex
 	$(TEXCMD) $<

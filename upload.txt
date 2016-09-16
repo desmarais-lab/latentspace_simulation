@@ -1,4 +1,4 @@
-simulation.R
-reduce.R
-.BatchJobs.R
-template.tmpl
+src/simulation.R
+src/reduce.R
+src/.BatchJobs.R
+src/template.tmpl

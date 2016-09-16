@@ -1,8 +1,7 @@
 library(BatchExperiments)
 library(plyr) ## for rbind.fill
 
-reg_open <- loadRegistry("reg")
-reg_bruce <- loadRegistry("../lsm_bruce/reg")
+reg <- loadRegistry("reg")
 
 reduce <- function(job, res) {
   if (!is.null(res)) {
@@ -25,19 +24,15 @@ reduce <- function(job, res) {
   }
 }
 
-res_reg_open <- batchMapQuick(reduceResultsExperiments,
-  chunk(findDone(reg_open), n.chunks = 80, shuffle = TRUE),
-  more.args = list(reg = reg_open, fun = reduce, progressbar = FALSE,
+## comment the definition of res_reg and res, and uncomment the below definition of res
+## to execute the reduction sequentially
+res_reg <- batchMapQuick(reduceResultsExperiments,
+  chunk(findDone(reg), n.chunks = 80, shuffle = TRUE),
+  more.args = list(reg = reg, fun = reduce, progressbar = FALSE,
     impute.val = list("estimate" = NA, "loss" = NA, "coverage" = NA)),
   resources = list(walltime = 86400L / 2, nodes = 1L, memory = "8gb"))
-waitForJobs(res_reg_open)
-res_open <- reduceResults(res_reg_open, fun = function(aggr, job, res) rbind.fill(aggr, res), init = data.frame())
+waitForJobs(res_reg)
 
-res_reg_bruce <- batchMapQuick(reduceResultsExperiments,
-  chunk(findDone(reg_bruce), n.chunks = 200, shuffle = TRUE),
-  more.args = list(reg = reg_bruce, fun = reduce, progressbar = FALSE,
-    impute.val = list("estimate" = NA, "loss" = NA, "coverage" = NA)),
-  resources = list(walltime = 86400L, nodes = 1L, memory = "8gb"))
-waitForJobs(res_reg_bruce)
-res_bruce <- reduceResults(res_reg_bruce, fun = function(aggr, job, res) rbind.fill(aggr, res), init = data.frame())
-write.csv(rbind(res_open, res_bruce), "results.csv")
+res <- reduceResults(res_reg, fun = function(aggr, job, res) rbind.fill(aggr, res), init = data.frame())
+## res <- reduceResultsExperiments(reg, fun = reduce)
+write.csv(res, "results.csv")
