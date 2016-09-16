@@ -214,15 +214,6 @@ batchExport(reg, create_network = create_network, ms_error = ms_error,
             rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
             overwrite = TRUE)
 
-resources <- list(walltime = 86400L * 1, nodes = 1L, memory = "8gb")
-
-## from earlier version
-removeExperiments(reg, findExperiments(reg, prob.pars = (eta < 1)))
-
-ids <- findNotStarted(reg)
-ids <- ids[!ids %in% findOnSystem(reg)]
-submitJobs(reg, chunk(ids, n.chunks = 80, shuffle = TRUE), resources)
-
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
 eta_hist <- foreach(eta = c(1, 100, 1000000), .combine = "rbind") %:%
