@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2015)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: manuscript.aux
+The style file: apsr.bst
+Database file #1: ref.bib
+Warning--there's a number but no volume in cao2016transnational
+You've used 45 entries,
+            2874 wiz_defined-function locations,
+            917 strings with 12561 characters,
+and the built_in function-call counts, 219454 in all, are:
+= -- 36064
+> -- 2821
+< -- 1
++ -- 17204
+- -- 980
+* -- 19050
+:= -- 43512
+add.period$ -- 183
+call.type$ -- 45
+change.case$ -- 585
+chr.to.int$ -- 45
+cite$ -- 46
+duplicate$ -- 720
+empty$ -- 1562
+format.name$ -- 1030
+if$ -- 39515
+int.to.chr$ -- 5
+int.to.str$ -- 0
+missing$ -- 48
+newline$ -- 193
+num.names$ -- 526
+pop$ -- 162
+preamble$ -- 1
+purify$ -- 675
+quote$ -- 0
+skip$ -- 642
+stack$ -- 0
+substring$ -- 51196
+swap$ -- 125
+text.length$ -- 631
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 172
+warning$ -- 1
+while$ -- 1074
+width$ -- 0
+write$ -- 640
+(There was 1 warning)
