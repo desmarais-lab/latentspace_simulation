@@ -1,0 +1,110 @@
+\section{Response Memo}\label{response-memo}
+
+\subsection{Response to Reviewer 1}\label{response-to-reviewer-1}
+
+\begin{quote}
+``The paper does not accurately characterize or analytically understand
+the latent space approaches employed by the work that is cited. For
+example Dorff and Ward (2013) do not use LATENTNET. LATENTNET is
+extremely outdated and is not the software used in much of the other
+work cited herein. This undermines much of the criticisms in the papers
+and raises a red flag that suggests the authors do not grasp the
+modeling approaches as deeply as they would present.''
+\end{quote}
+
+While we appreciate that the \texttt{latentnet} package is not the
+implementation most commonly used in political science, it is used
+outside of political science. We have made this point more clearly in
+the revised manuscript. Most importantly, our criticism is not specific
+to the implementation in \texttt{latentnet}, and we argue (again, more
+clearly in the revised manuscript), that our argument does not depend on
+the specific software implementation or parameterization used, and hence
+this criticism does not speak to our point, which is that that the LSM
+cannot adjust for unobserved confounders, even in a synthetic scenario
+designed to make this as easy as possible.
+
+\begin{quote}
+``The authors are not up-to-date on the state of latent modeling in the
+field and have ignored more recent work (which addresses many of the
+concerns raised by the authors) particularly by Peter Hoff and Shahryar
+Minhas. Additionally, the progress made by the newly developed AMEN
+software is completely overlooked by this article.''
+\end{quote}
+
+We have added discussion of the AMEN package, which we were aware of,
+but again, does not apply to our argument for the same reason.
+
+\begin{quote}
+``In that vein, authors identify a problem (e.g., collinearity between
+latent distance parameters and exogenous variables in the latentnet
+framework) and do not solve it nor discuss any recent work that tries to
+address this problem.''
+\end{quote}
+
+Our point is that when the measured covariates are \emph{not}
+independent of the unobserved structure in the network, that estimating
+that structure using latent variables cannot adjust for any confounding.
+We are unaware of any work that attempts to tackle this problem and we
+furthermore consider the problem as we've posed it intractable for
+theoretical reasons, which we have elucidated more clearly in our
+revised version. In generally latent variables cannot be used to adjust
+the effects of measured covariates. In the case where the measured
+covariates are independent of any unmeasured structure, the LSM does no
+worse than standard models, as we show in our simulation.
+
+\subsection{Response to Reviewer 2}\label{response-to-reviewer-2}
+
+\begin{quote}
+``Yet, in their efforts to contextualize their research the authors seem
+to disregard or not be aware of notable differences between existing
+latent variable approaches. Specifically, much of the work they cite
+(e.g., Ward Siverson and Cao 2007, Ward, Ahlquist and Rozenas 2013,
+etc.) does not even use the type of latent variable model that the
+authors focus on in their paper. In fact, with the exception of a 2012
+piece by Kirkland, I am not aware of any published political science
+work that actually uses the latent space model for network analysis the
+authors study here.''
+\end{quote}
+
+While this is true, it is orthogonal to our point, which is that the
+LSM, regardless of how the latent variables are parameterized, cannot
+adjust for unobserved network confounders. We chose the first
+formulation of the LSM to make our synthetic demonstration as
+understandable as possible. We argue that it shows that even in the most
+ideal scenario, the LSM cannot adjust for confounders that are
+unmeasured. We have made the point that this behavior is independent of
+the parameterization of the latent variables more clear in the revised
+manuscript. While we certainly could have chosen any number of the
+variations of the LSM for our simulation, absent clear reasons to do so
+we do not believe that it is reasonable to expend the substantial
+computational resources necessary to expand the simulation.
+
+\begin{quote}
+``The difference between these approaches has been shown to be
+consequential in a number of works. Hoff \& Ward (2004) and Hoff (2005)
+detail the ways in which the GBME is different than the latent distance
+model that is employed in the latentnet package. Hoff (2008) explicitly
+discusses how the latent distance model confounds transitivity and
+stochastic equivalence (two types of third order interdependencies) in
+problematic ways that the latent factor model is able to avoid. The
+issue this paper seems most concerned with showing is that the latent
+distance model does not solve the problem of bias and inferential error
+relative to GLM for observed covariates. They do so through a well
+executed simulation exercise and the results are certainly compelling in
+favor of showcasing a shortcoming of the latent distance model. At the
+same time, this result is not very surprising. For the latent distance
+model we expect there to be some collinearity between covariates for
+which there is homophily and latent position. In theory, a weak prior on
+the covariate coefficients and a strong (tight) prior on the
+coefficients should minimize this effect, but at the cost of less
+expressiveness for latent positions.''
+\end{quote}
+
+We agree that the parameterization of the latent variables can affect
+what can be learned about omitted structure in the network, as
+suggested. However, this is unrelated to our point which is that it is
+not possible to adjust the estimates of the effect of observed
+covariates using a latent variable model that can represent unobserved
+structure. We argue more clearly in the revised manuscript that this is
+not a property of the Euclidean distance formulation we chose for
+expository simplicity.
