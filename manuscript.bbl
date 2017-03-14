@@ -120,11 +120,23 @@ Hays, Jude~C, Aya Kachi \harvardand\ Robert~J Franzese. 2010.
   interdependence: A political science application.'' {\em Statistical
   Methodology} 7(3):406--428.
 
+\harvarditem{Hoff}{2005}{hoff_2005_jasa}
+Hoff, P.D. 2005.
+\newblock ``Bilinear mixed-effects models for dyadic data.'' {\em J. Amer.
+  Statist. Assoc.} 100(469):286--295.
+
 \harvarditem{Hoff}{2008}{hoff2008modeling}
 Hoff, Peter. 2008.
 \newblock Modeling homophily and stochastic equivalence in symmetric relational
   data.  In {\em Advances in Neural Information Processing Systems}.
 \newblock pp.~657--664.
+
+\harvarditem[Hoff et~al.]{Hoff, Fosdick, Volfovsky \harvardand\ He}{2015}{amen}
+Hoff, Peter, Bailey Fosdick, Alex Volfovsky \harvardand\ Yanjun He. 2015.
+\newblock {\em amen: Additive and Multiplicative Effects Models for Networks
+  and Relational Data}.
+\newblock R package version 1.1.
+\newline\harvardurl{http://CRAN.R-project.org/package=amen}
 
 \harvarditem{Hoff}{2003}{hoff2003random}
 Hoff, Peter~D. 2003.
@@ -137,11 +149,21 @@ Hoff, Peter~D. 2009.
   of social networks.'' {\em Computational and mathematical organization
   theory} 15(4):261--272.
 
+\harvarditem{Hoff}{2015}{hoff2015dyadic}
+Hoff, Peter~D. 2015.
+\newblock ``Dyadic data analysis with amen.'' {\em arXiv preprint
+  arXiv:1506.08237} .
+
 \harvarditem[Hoff, Raftery \harvardand\ Handcock]{Hoff, Raftery \harvardand\
   Handcock}{2002}{hoff2002latent}
 Hoff, Peter~D, Adrian~E Raftery \harvardand\ Mark~S Handcock. 2002.
 \newblock ``Latent space approaches to social network analysis.'' {\em Journal
   of the american Statistical association} 97(460):1090--1098.
+
+\harvarditem{Hoff \harvardand\ Ward}{2004}{hoff2004modeling}
+Hoff, Peter~D \harvardand\ Michael~D Ward. 2004.
+\newblock ``Modeling dependencies in international relations networks.'' {\em
+  Political Analysis} 12(2):160--175.
 
 \harvarditem{Kinne}{2014}{kinne2014}
 Kinne, Brandon~J. 2014.
