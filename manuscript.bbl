@@ -207,6 +207,12 @@ Lewandowski, Daniel, Dorota Kurowicka \harvardand\ Harry Joe. 2009.
 \newblock ``Generating random correlation matrices based on vines and extended
   onion method.'' {\em Journal of multivariate analysis} 100(9):1989--2001.
 
+\harvarditem[Minhas, Hoff \harvardand\ Ward]{Minhas, Hoff \harvardand\
+  Ward}{2016}{minhas2016inferential}
+Minhas, Shahryar, Peter~D Hoff \harvardand\ Michael~D Ward. 2016.
+\newblock ``Inferential Approaches for Network Analyses: AMEN for Latent Factor
+  Models.'' {\em arXiv preprint arXiv:1611.00460} .
+
 \harvarditem{Mood}{2010}{mood2010logistic}
 Mood, Carina. 2010.
 \newblock ``Logistic regression: Why we cannot do what we think we can do, and

@@ -1,3 +1,4 @@
+
 \section{Response Memo}\label{response-memo}
 
 \subsection{Response to Reviewer 1}\label{response-to-reviewer-1}
@@ -23,7 +24,7 @@ this criticism does not speak to our point, which is that that the LSM
 cannot adjust for unobserved confounders, even in a synthetic scenario
 designed to make this as easy as possible.
 
-We updated the Problem section of the manuscript to represent, (1) that we know about extensions to the LSM, (2) to be clear that we think the problem affects all versions of the LSM, and (3) to quote from AMEN to echo the problem we see with using LSM as a method of adjusting for confounders.
+We updated the Problem section of the manuscript to represent, (1) that we know about extensions to the LSM, (2) to be clear that we think the problem affects all versions of the LSM, and (3) to quote from AMEN to echo the problem we see with using LSM as a method of adjusting for confounders. We cannot possibly analyze all of the individual variants of the LSM, but our point is more broadly directed at the use of latent variables to adjust for confounding network dependencies. 
 
 \begin{quote}
 ``The authors are not up-to-date on the state of latent modeling in the
@@ -42,6 +43,9 @@ latent distance parameters and exogenous variables in the latentnet
 framework) and do not solve it nor discuss any recent work that tries to
 address this problem.''
 \end{quote}
+
+We added discussion of the way in which AMEN addresses the problem of correlation between the observed covariates and the latent factors. We point out, however, that the AMEN approach is designed to address Type 2 error by prioritizing the observed covariates and using the latent factors to explain the variation in the residuals. This does not address Type 1 error (which is more troubling than Type 2), and probably makes Type 1 worse.
+
 
 Our point is that when the measured covariates are \emph{not}
 independent of the unobserved structure in the network, that estimating
