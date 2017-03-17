@@ -247,15 +247,16 @@ Plummer, Martyn, Nicky Best, Kate Cowles \harvardand\ Karen Vines. 2006.
 \newblock Vienna, Austria:  R Foundation for Statistical Computing.
 \newline\harvardurl{https://www.R-project.org/}
 
-\harvarditem{Shmueli}{2010}{shmueli2010explain}
-Shmueli, Galit. 2010.
-\newblock ``To explain or to predict?'' {\em Statistical science} pp.~289--310.
-
 \harvarditem[Simpson, Bowman \harvardand\ Laurienti]{Simpson, Bowman
   \harvardand\ Laurienti}{2013}{simpson2013analyzing}
 Simpson, Sean~L, F~DuBois Bowman \harvardand\ Paul~J Laurienti. 2013.
 \newblock ``Analyzing complex functional brain networks: fusing statistics and
   network science to understand the brain.'' {\em Statistics surveys} 7:1.
+
+\harvarditem{Sweet \harvardand\ Junker}{2011}{sweet2011modeling}
+Sweet, Tracy~Morrison \harvardand\ Brian Junker. 2011.
+\newblock ``Modeling intervention effects on social networks in education
+  research.'' {\em Educational Evaluation and Policy Analysis} 30:203--235.
 
 \harvarditem{Tibshirani}{1989}{tibshirani1989noninformative}
 Tibshirani, Robert. 1989.

@@ -6,43 +6,43 @@ Database file #1: ref.bib
 Warning--there's a number but no volume in cao2016transnational
 You've used 51 entries,
             2874 wiz_defined-function locations,
-            948 strings with 13477 characters,
-and the built_in function-call counts, 243159 in all, are:
-= -- 39899
-> -- 3165
+            949 strings with 13571 characters,
+and the built_in function-call counts, 244991 in all, are:
+= -- 40216
+> -- 3200
 < -- 1
-+ -- 19015
-- -- 1100
-* -- 21079
-:= -- 48316
++ -- 19186
+- -- 1111
+* -- 21258
+:= -- 48671
 add.period$ -- 207
 call.type$ -- 51
 change.case$ -- 663
 chr.to.int$ -- 51
 cite$ -- 52
-duplicate$ -- 806
-empty$ -- 1745
-format.name$ -- 1157
-if$ -- 43757
+duplicate$ -- 798
+empty$ -- 1739
+format.name$ -- 1166
+if$ -- 44079
 int.to.chr$ -- 5
 int.to.str$ -- 0
 missing$ -- 53
 newline$ -- 219
-num.names$ -- 597
-pop$ -- 181
+num.names$ -- 599
+pop$ -- 179
 preamble$ -- 1
 purify$ -- 765
 quote$ -- 0
-skip$ -- 718
+skip$ -- 706
 stack$ -- 0
-substring$ -- 56568
-swap$ -- 136
+substring$ -- 57034
+swap$ -- 128
 text.length$ -- 715
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 196
 warning$ -- 1
-while$ -- 1214
+while$ -- 1215
 width$ -- 0
 write$ -- 726
 (There was 1 warning)
