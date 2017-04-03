@@ -7,7 +7,7 @@ upload:
 
 download:
 	rm -rf reg
-g	rsync -azv --files-from=download.txt zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce $(PWD)
+	rsync -azv --files-from=download.txt zmj102@aci-b.aci.ics.psu.edu:work/lsm_bruce $(PWD)
 
 graphs:
 	rscript src/analysis.R
@@ -28,5 +28,3 @@ diff.pdf: manuscript.tex
 	cp manuscript.tex "manuscript" $("manuscript" date +"%Y%m%d_%H%M%S")
 	find . | egrep ".*((\.(aux|log|blg|bbl|out|DS_Store)))$$" | xargs rm
 	rm -rf auto
-
-

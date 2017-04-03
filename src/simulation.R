@@ -1,11 +1,8 @@
-library("BatchExperiments")
-library("latentnet")
-library("foreach")
-library("clusterGeneration")
-library("iterators")
+pkgs <- c("BatchExperiments", "latentnet", "amen", "foreach", "clusterGeneration",
+  "iterators", "network", "mvtnorm", "coda")
+invisible(lapply(pkgs, library, character.only = TRUE))
 
 create_network <- function(y, name = "eweight") {
-  library("network")
   net <- network(y, directed = FALSE)
   el <- as.matrix(net, "edgelist")
   w <- y[el]
@@ -14,8 +11,6 @@ create_network <- function(y, name = "eweight") {
 }
 
 rmvnorm_d <- function(sigma, d) {
-  library("mvtnorm")
-  
   var_d <- var(d)
   mu_d <- mean(d)
   n_var <- ncol(sigma)
@@ -58,10 +53,15 @@ diagnostic <- function(fit) {
 }
 
 create_data <- function(static, family, eta, nodes, beta, latent_space) {
-  library("clusterGeneration")
-
   C <- abs(cov2cor(genPositiveDefMat(static$p, "c-vine", eta = eta)$Sigma))
-  d <- as.matrix(dist(replicate(static$p, rnorm(nodes, 0, static$sigma))))
+  if (static$billinear) {
+    u <- rnorm(nodes, 0, static$sigma)
+    v <- rnorm(nodes, 0, static$sigma)
+    d <- u %o% v
+  } else {
+    d <- as.matrix(dist(replicate(static$p, rnorm(nodes, 0, static$sigma))))
+  }
+
   d <- d[lower.tri(d)]
   d <- d / (sd(d) / sqrt(diag(C)[nrow(C)]))
   X <- rmvnorm_d(C, d)
@@ -91,42 +91,55 @@ create_data <- function(static, family, eta, nodes, beta, latent_space) {
     family = family,
     nodes = nodes,
     beta = beta,
-    latent_space = latent_space
+    latent_space = latent_space,
+    bilinear = bilinear
   )
   ret
 }
 
-lsm.wrapper <- function(static, dynamic, ...) {
-  library("latentnet")
-  library("coda")
-
+amen.wrapper <- function(static, dynamic, ...) {
   dots <- list(...)
+  lf <- c("gaussian" = "nrm", "binomial" = "bin", "poisson" = "Poisson")
 
+  fit <- ame(dynamic$y, dynamic$X, R = 2,
+    rvar = FALSE, cvar = FALSE, dcor = FALSE, nvar = FALSE,
+    symmetric = TRUE, plot = FALSE, model = "nrm", seed = static$seed, print = FALSE,
+    nscan = static$ame_mcmc)
+  
+}
+
+lsm.wrapper <- function(static, dynamic, ...) {
+  dots <- list(...)
   net <- create_network(dynamic$y)
   .GlobalEnv$X <- dynamic$X ## fuck you latentet
 
   lf <- c("gaussian" = "Gaussian", "binomial" = "Bernoulli", "poisson" = "Poisson")
 
-  if (dots$scale) {
-    glm_fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
-    prior_variance <- (abs(coef(glm_fit)[2]) * var(dynamic$X_stack)) / (2 - 4 / pi)
-    prior_variance <- unname(as.numeric(prior_variance))
-    prior <- ergmm.prior("Z.var" = prior_variance)
-  } else {
-    prior <- ergmm.prior(...)
-  }
+  ## if (dots$scale) {
+  ##   glm_fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
+  ##   prior_variance <- (abs(coef(glm_fit)[2]) * var(dynamic$X_stack)) / (2 - 4 / pi)
+  ##   prior_variance <- unname(as.numeric(prior_variance))
+  ##   prior <- ergmm.prior("Z.var" = prior_variance)
+  ## } else {
+  ##   prior <- ergmm.prior(...)
+  ## }
 
   fam.par <- list("prior.var" = static$sigma, "prior.var.df" = dynamic$nodes)
   if (dynamic$family != "gaussian") fam.par <- NULL
 
   flag <- TRUE
   iter <- 1
+  formula <- paste0("net ~ edgeocov(X)")
   while (flag) {
-    fit <- ergmm(net ~ edgecov(X) + euclidean(d = 1),
+    if (bilinear)
+      form <- paste0(formula, "+ bilinear(d = 1)")
+    else
+      form <- paste0(formula, "+ euclidean(d = 1)")
+    system.time(fit <- ergmm(as.formula(form),
                  "eweight", unname(lf[names(lf) %in% dynamic$family]),
                  fam.par = fam.par, prior = prior,
                  tofit = c("mcmc", "pmode"), seed = static$seed,
-                 control = static$control)
+                 control = static$control))
     ## assess convergence, re-run if necessary
     geweke <- geweke.diag(as.mcmc(fit)[[1]])$z
     if (abs(unname(geweke[["lpY"]])) < 1 | iter == static$maxit) {
@@ -181,11 +194,21 @@ truth.wrapper <- function(static, dynamic, ...) {
 
 reg <- makeExperimentRegistry("lsm", "reg")
 
-addProblem(reg, "test", dynamic = create_data, seed = 1234, overwrite = TRUE,
-           static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
-                         control = ergmm.control(sample.size = 10000, burnin = 10000, interval = 100)))
+addProblem(reg, "euclidean.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
+  static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
+    control = ergmm.control(sample.size = 10000, burnin = 10000, interval = 100),
+    bilinear = FALSE))
 
-problem.pars <- list(
+addProblem(reg, "billinear.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
+  static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
+    control = ergmm.control(sample.size = 10000, burnin = 10000, interval = 100),
+    bilinear = TRUE))
+
+## addProblem(reg, "amen.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
+##   static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
+##     control = ...))
+
+euclidean.pars <- list(
   "eta" = c(.1, 1, 100, 1000000),
   "family" = c("gaussian", "binomial", "poisson"),
   "nodes" = c(25, 50, 100),
@@ -193,26 +216,46 @@ problem.pars <- list(
   "latent_space" = c(-1, 0)
 )
 
-problem.design <- makeDesign("test", exhaustive = problem.pars)
+bilinear.pars <- list(
+  "eta" = c(.1, 1, 100, 1000000),
+  "family" = c("gaussian", "binomial", "poisson"),
+  "nodes" = c(25, 50, 100),
+  "beta" = c(1, 0),
+  "latent_space" = c(1, 0)
+)
 
-lsm.pars <- list("scale" = c(TRUE, FALSE),
+euclidean.problem.design <- makeDesign("euclidean.test", exhaustive = euclidean.pars)
+bilinear.problem.design <- makeDesign("bilinear.test", exhaustive = bilinear.pars)
+
+lsm.pars <- list(## "scale" = c(TRUE, FALSE), ## this was removed in the 2nd version
                  "beta.var" = c(1, 10))
 glm.pars <- list()
 truth.pars <- list()
+## amen.pars <- list()
 
 lsm.design <- makeDesign("lsm", exhaustive = lsm.pars)
 glm.design <- makeDesign("glm", exhaustive = glm.pars)
 truth.design <- makeDesign("truth", exhaustive = truth.pars)
+## amen.design <- makeDesign("amen", exhaustive = amen.pars)
 
+## addAlgorithm(reg, "amen", amen.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "lsm", lsm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "glm", glm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "truth", truth.wrapper, overwrite = TRUE)
 
-addExperiments(reg, problem.design, list("lsm" = lsm.design, "glm" = glm.design, "truth" = truth.design),
-               repls = 500, skip.defined = TRUE)
+addExperiments(reg, euclidean.design, list("lsm" = lsm.design, "glm" = glm.design,
+  "truth" = truth.design), ## "amen" = amen.design,
+  repls = 500, skip.defined = TRUE)
 batchExport(reg, create_network = create_network, ms_error = ms_error,
-            rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
-            overwrite = TRUE)
+  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
+  overwrite = TRUE)
+
+addExperiments(reg, bilinear.design, list("lsm" = lsm.design, "glm" = glm.design,
+  "truth" = truth.design), ## "amen" = amen.design,
+  repls = 500, skip.defined = TRUE)
+batchExport(reg, create_network = create_network, ms_error = ms_error,
+  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
+  overwrite = TRUE)
 
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
