@@ -4,45 +4,45 @@ The top-level auxiliary file: manuscript.aux
 The style file: apsr.bst
 Database file #1: ref.bib
 Warning--there's a number but no volume in cao2016transnational
-You've used 46 entries,
+You've used 51 entries,
             2874 wiz_defined-function locations,
-            922 strings with 12763 characters,
-and the built_in function-call counts, 224929 in all, are:
-= -- 36954
-> -- 2910
+            949 strings with 13571 characters,
+and the built_in function-call counts, 244991 in all, are:
+= -- 40216
+> -- 3200
 < -- 1
-+ -- 17639
-- -- 1010
-* -- 19532
-:= -- 44596
-add.period$ -- 187
-call.type$ -- 46
-change.case$ -- 598
-chr.to.int$ -- 46
-cite$ -- 47
-duplicate$ -- 735
-empty$ -- 1598
-format.name$ -- 1060
-if$ -- 40498
++ -- 19186
+- -- 1111
+* -- 21258
+:= -- 48671
+add.period$ -- 207
+call.type$ -- 51
+change.case$ -- 663
+chr.to.int$ -- 51
+cite$ -- 52
+duplicate$ -- 798
+empty$ -- 1739
+format.name$ -- 1166
+if$ -- 44079
 int.to.chr$ -- 5
 int.to.str$ -- 0
-missing$ -- 49
-newline$ -- 197
-num.names$ -- 540
-pop$ -- 164
+missing$ -- 53
+newline$ -- 219
+num.names$ -- 599
+pop$ -- 179
 preamble$ -- 1
-purify$ -- 690
+purify$ -- 765
 quote$ -- 0
-skip$ -- 656
+skip$ -- 706
 stack$ -- 0
-substring$ -- 52466
-swap$ -- 127
-text.length$ -- 645
+substring$ -- 57034
+swap$ -- 128
+text.length$ -- 715
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 176
+type$ -- 196
 warning$ -- 1
-while$ -- 1100
+while$ -- 1215
 width$ -- 0
-write$ -- 655
+write$ -- 726
 (There was 1 warning)

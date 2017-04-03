@@ -120,11 +120,23 @@ Hays, Jude~C, Aya Kachi \harvardand\ Robert~J Franzese. 2010.
   interdependence: A political science application.'' {\em Statistical
   Methodology} 7(3):406--428.
 
+\harvarditem{Hoff}{2005}{hoff_2005_jasa}
+Hoff, P.D. 2005.
+\newblock ``Bilinear mixed-effects models for dyadic data.'' {\em J. Amer.
+  Statist. Assoc.} 100(469):286--295.
+
 \harvarditem{Hoff}{2008}{hoff2008modeling}
 Hoff, Peter. 2008.
 \newblock Modeling homophily and stochastic equivalence in symmetric relational
   data.  In {\em Advances in Neural Information Processing Systems}.
 \newblock pp.~657--664.
+
+\harvarditem[Hoff et~al.]{Hoff, Fosdick, Volfovsky \harvardand\ He}{2015}{amen}
+Hoff, Peter, Bailey Fosdick, Alex Volfovsky \harvardand\ Yanjun He. 2015.
+\newblock {\em amen: Additive and Multiplicative Effects Models for Networks
+  and Relational Data}.
+\newblock R package version 1.1.
+\newline\harvardurl{http://CRAN.R-project.org/package=amen}
 
 \harvarditem{Hoff}{2003}{hoff2003random}
 Hoff, Peter~D. 2003.
@@ -137,11 +149,21 @@ Hoff, Peter~D. 2009.
   of social networks.'' {\em Computational and mathematical organization
   theory} 15(4):261--272.
 
+\harvarditem{Hoff}{2015}{hoff2015dyadic}
+Hoff, Peter~D. 2015.
+\newblock ``Dyadic data analysis with amen.'' {\em arXiv preprint
+  arXiv:1506.08237} .
+
 \harvarditem[Hoff, Raftery \harvardand\ Handcock]{Hoff, Raftery \harvardand\
   Handcock}{2002}{hoff2002latent}
 Hoff, Peter~D, Adrian~E Raftery \harvardand\ Mark~S Handcock. 2002.
 \newblock ``Latent space approaches to social network analysis.'' {\em Journal
   of the american Statistical association} 97(460):1090--1098.
+
+\harvarditem{Hoff \harvardand\ Ward}{2004}{hoff2004modeling}
+Hoff, Peter~D \harvardand\ Michael~D Ward. 2004.
+\newblock ``Modeling dependencies in international relations networks.'' {\em
+  Political Analysis} 12(2):160--175.
 
 \harvarditem{Kinne}{2014}{kinne2014}
 Kinne, Brandon~J. 2014.
@@ -185,6 +207,12 @@ Lewandowski, Daniel, Dorota Kurowicka \harvardand\ Harry Joe. 2009.
 \newblock ``Generating random correlation matrices based on vines and extended
   onion method.'' {\em Journal of multivariate analysis} 100(9):1989--2001.
 
+\harvarditem[Minhas, Hoff \harvardand\ Ward]{Minhas, Hoff \harvardand\
+  Ward}{2016}{minhas2016inferential}
+Minhas, Shahryar, Peter~D Hoff \harvardand\ Michael~D Ward. 2016.
+\newblock ``Inferential Approaches for Network Analyses: AMEN for Latent Factor
+  Models.'' {\em arXiv preprint arXiv:1611.00460} .
+
 \harvarditem{Mood}{2010}{mood2010logistic}
 Mood, Carina. 2010.
 \newblock ``Logistic regression: Why we cannot do what we think we can do, and
@@ -219,15 +247,16 @@ Plummer, Martyn, Nicky Best, Kate Cowles \harvardand\ Karen Vines. 2006.
 \newblock Vienna, Austria:  R Foundation for Statistical Computing.
 \newline\harvardurl{https://www.R-project.org/}
 
-\harvarditem{Shmueli}{2010}{shmueli2010explain}
-Shmueli, Galit. 2010.
-\newblock ``To explain or to predict?'' {\em Statistical science} pp.~289--310.
-
 \harvarditem[Simpson, Bowman \harvardand\ Laurienti]{Simpson, Bowman
   \harvardand\ Laurienti}{2013}{simpson2013analyzing}
 Simpson, Sean~L, F~DuBois Bowman \harvardand\ Paul~J Laurienti. 2013.
 \newblock ``Analyzing complex functional brain networks: fusing statistics and
   network science to understand the brain.'' {\em Statistics surveys} 7:1.
+
+\harvarditem{Sweet \harvardand\ Junker}{2011}{sweet2011modeling}
+Sweet, Tracy~Morrison \harvardand\ Brian Junker. 2011.
+\newblock ``Modeling intervention effects on social networks in education
+  research.'' {\em Educational Evaluation and Policy Analysis} 30:203--235.
 
 \harvarditem{Tibshirani}{1989}{tibshirani1989noninformative}
 Tibshirani, Robert. 1989.
