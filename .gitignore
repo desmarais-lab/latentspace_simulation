@@ -1,0 +1,9 @@
+*.aux
+*.blg
+*.bbl
+*.log
+*.synctex.gz
+*.out
+.DS_Store
+.dropbox
+.Rapp.history
