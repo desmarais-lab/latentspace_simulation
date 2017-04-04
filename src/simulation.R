@@ -40,6 +40,8 @@ unstack_vector <- function(x, n) {
   mat
 }
 
+stack_matrix <- function(x) x[lower.tri(x)]
+
 diagnostic <- function(fit) {
   stopifnot(any(class(fit) %in% "glm"))
   SVD <- svd(scale(solve(vcov(fit)), center = FALSE))
@@ -56,8 +58,8 @@ create_data <- function(static, family, eta, nodes, beta, latent_space) {
   C <- abs(cov2cor(genPositiveDefMat(static$p, "c-vine", eta = eta)$Sigma))
   if (static$billinear) {
     u <- rnorm(nodes, 0, static$sigma)
-    v <- rnorm(nodes, 0, static$sigma)
-    d <- u %o% v
+    ## v <- rnorm(nodes, 0, static$sigma)
+    d <- u %o% u ## symmetric
   } else {
     d <- as.matrix(dist(replicate(static$p, rnorm(nodes, 0, static$sigma))))
   }
@@ -99,12 +101,41 @@ create_data <- function(static, family, eta, nodes, beta, latent_space) {
 
 amen.wrapper <- function(static, dynamic, ...) {
   dots <- list(...)
-  lf <- c("gaussian" = "nrm", "binomial" = "bin", "poisson" = "Poisson")
+  lf <- c("gaussian" = "nrm", "binomial" = "bin")
 
-  fit <- ame(dynamic$y, dynamic$X, R = 2,
-    rvar = FALSE, cvar = FALSE, dcor = FALSE, nvar = FALSE,
-    symmetric = TRUE, plot = FALSE, model = "nrm", seed = static$seed, print = FALSE,
-    nscan = static$ame_mcmc)
+  flag <- TRUE
+  iter <- 1
+  m <- 200
+
+  while (flag) {
+    fit <- ame(dynamic$y, dynamic$X, R = 1,
+      rvar = FALSE, cvar = FALSE, dcor = FALSE, nvar = FALSE,
+      symmetric = TRUE, plot = FALSE, model = unname(lf[names(lf) %in% dynamic$family]),
+      seed = static$seed, print = FALSE,
+      nscan = static$ame_mcmc, odens = static$thin)
+
+    raft <- as.numeric(max(raftery.diag(as.mcmc(fit$BETA))$resmatrix[, 2]))
+    if (m > raft | iter == static$maxit) {
+      flag <- FALSE
+    } else {
+      iter <- iter + 1
+      static$ame_mcmc <- static$ame_mcmc * 2
+    }
+  }
+
+  pred <- colMeans(fit$BETA %*% t(as.matrix(cbind(1, dynamic$X_stack)))) +
+    stack_matrix(fit$U %*% t(fit$U))
+
+  list(
+    "pred" = pred,
+    "estimate" = mean(fit$BETA[, 2]),
+    "interval" = HPDinterval(as.mcmc(fit$BETA[, 2])),
+    "loss" = ms_error(unstack_vector(pred, dynamic$nodes), dynamic$y_new),
+    "loss" = ms_error(pred, dynamic$y_stack_new),
+    "convergence" = raft,
+    "data" = dynamic,
+    "fit" = fit
+  )
   
 }
 
@@ -114,15 +145,6 @@ lsm.wrapper <- function(static, dynamic, ...) {
   .GlobalEnv$X <- dynamic$X ## fuck you latentet
 
   lf <- c("gaussian" = "Gaussian", "binomial" = "Bernoulli", "poisson" = "Poisson")
-
-  ## if (dots$scale) {
-  ##   glm_fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
-  ##   prior_variance <- (abs(coef(glm_fit)[2]) * var(dynamic$X_stack)) / (2 - 4 / pi)
-  ##   prior_variance <- unname(as.numeric(prior_variance))
-  ##   prior <- ergmm.prior("Z.var" = prior_variance)
-  ## } else {
-  ##   prior <- ergmm.prior(...)
-  ## }
 
   fam.par <- list("prior.var" = static$sigma, "prior.var.df" = dynamic$nodes)
   if (dynamic$family != "gaussian") fam.par <- NULL
@@ -200,13 +222,8 @@ addProblem(reg, "euclidean.test", dynamic = create_data, seed = 1234, overwrite 
     bilinear = FALSE))
 
 addProblem(reg, "billinear.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
-  static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
-    control = ergmm.control(sample.size = 10000, burnin = 10000, interval = 100),
-    bilinear = TRUE))
-
-## addProblem(reg, "amen.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
-##   static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
-##     control = ...))
+  static = list(p = 2, sigma = 1, seed = 1234, maxit = 2, bilinear = TRUE,
+    ame_mcmc = 100000))
 
 euclidean.pars <- list(
   "eta" = c(.1, 1, 100, 1000000),
@@ -218,7 +235,7 @@ euclidean.pars <- list(
 
 bilinear.pars <- list(
   "eta" = c(.1, 1, 100, 1000000),
-  "family" = c("gaussian", "binomial", "poisson"),
+  "family" = c("gaussian", "binomial"),
   "nodes" = c(25, 50, 100),
   "beta" = c(1, 0),
   "latent_space" = c(1, 0)
@@ -231,14 +248,14 @@ lsm.pars <- list(## "scale" = c(TRUE, FALSE), ## this was removed in the 2nd ver
                  "beta.var" = c(1, 10))
 glm.pars <- list()
 truth.pars <- list()
-## amen.pars <- list()
+amen.pars <- list()
 
 lsm.design <- makeDesign("lsm", exhaustive = lsm.pars)
 glm.design <- makeDesign("glm", exhaustive = glm.pars)
 truth.design <- makeDesign("truth", exhaustive = truth.pars)
-## amen.design <- makeDesign("amen", exhaustive = amen.pars)
+amen.design <- makeDesign("amen", exhaustive = amen.pars)
 
-## addAlgorithm(reg, "amen", amen.wrapper, overwrite = TRUE)
+addAlgorithm(reg, "amen", amen.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "lsm", lsm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "glm", glm.wrapper, overwrite = TRUE)
 addAlgorithm(reg, "truth", truth.wrapper, overwrite = TRUE)
@@ -250,8 +267,7 @@ batchExport(reg, create_network = create_network, ms_error = ms_error,
   rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
   overwrite = TRUE)
 
-addExperiments(reg, bilinear.design, list("lsm" = lsm.design, "glm" = glm.design,
-  "truth" = truth.design), ## "amen" = amen.design,
+addExperiments(reg, bilinear.design, list("amen" = amen.design, "truth" = truth.design), 
   repls = 500, skip.defined = TRUE)
 batchExport(reg, create_network = create_network, ms_error = ms_error,
   rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
