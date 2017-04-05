@@ -1,7 +1,9 @@
-library("BatchExperiments")
+library("batchtools")
 
 ## load registry defined in simulation.R
-reg <- loadRegistry("reg")
+reg <- loadRegistry("lsm")
+reg$cluster.functions = makeClusterFunctionsTORQUE("template.tmpl")
+
 ## per-job resources for torque cluster with 80 cores
 resources <- list(walltime = 86400L * 1, nodes = 1L, memory = "8gb")
 

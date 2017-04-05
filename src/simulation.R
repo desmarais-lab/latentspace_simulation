@@ -1,4 +1,4 @@
-pkgs <- c("BatchExperiments", "latentnet", "amen", "foreach", "clusterGeneration",
+pkgs <- c("batchtools", "latentnet", "amen", "foreach", "clusterGeneration",
   "iterators", "network", "mvtnorm", "coda")
 invisible(lapply(pkgs, library, character.only = TRUE))
 
@@ -54,14 +54,14 @@ diagnostic <- function(fit) {
   round(out, 3)
 }
 
-create_data <- function(static, family, eta, nodes, beta, latent_space) {
-  C <- abs(cov2cor(genPositiveDefMat(static$p, "c-vine", eta = eta)$Sigma))
-  if (static$billinear) {
-    u <- rnorm(nodes, 0, static$sigma)
-    ## v <- rnorm(nodes, 0, static$sigma)
+create_data <- function(data, job, p, eta, nodes, family, beta, latent_space, ...) {
+  C <- abs(cov2cor(genPositiveDefMat(data$p, "c-vine", eta = eta)$Sigma))
+  if (data$bilinear) {
+    u <- rnorm(nodes, 0, data$sigma)
+    ## v <- rnorm(nodes, 0, data$sigma)
     d <- u %o% u ## symmetric
   } else {
-    d <- as.matrix(dist(replicate(static$p, rnorm(nodes, 0, static$sigma))))
+    d <- as.matrix(dist(replicate(data$p, rnorm(nodes, 0, data$sigma))))
   }
 
   d <- d[lower.tri(d)]
@@ -70,14 +70,14 @@ create_data <- function(static, family, eta, nodes, beta, latent_space) {
   X <- (X - colMeans(X)) / apply(X, 2, sd)
   lp <- beta * X + latent_space * d
   y_stack <- switch(family,
-                    gaussian = rnorm(length(lp), lp, static$sigma),
+                    gaussian = rnorm(length(lp), lp, data$sigma),
                     binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
                     poisson = rpois(length(lp), exp(lp)))
   y <- unstack_vector(y_stack, nodes)
   X_stack <- data.frame(X)
   X <- unstack_vector(X, nodes)
   y_stack_new <- switch(family,
-                        gaussian = rnorm(length(lp), lp, static$sigma),
+                        gaussian = rnorm(length(lp), lp, data$sigma),
                         binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
                         poisson = rpois(length(lp), exp(lp)))
   y_new <- unstack_vector(y_stack_new, nodes)
@@ -94,136 +94,136 @@ create_data <- function(static, family, eta, nodes, beta, latent_space) {
     nodes = nodes,
     beta = beta,
     latent_space = latent_space,
-    bilinear = bilinear
+    bilinear = data$bilinear
   )
   ret
 }
 
-amen.wrapper <- function(static, dynamic, ...) {
+amen.wrapper <- function(data, job, instance, ...) {
   dots <- list(...)
   lf <- c("gaussian" = "nrm", "binomial" = "bin")
 
   flag <- TRUE
   iter <- 1
-  m <- 200
 
   while (flag) {
-    fit <- ame(dynamic$y, dynamic$X, R = 1,
+    fit <- ame(instance$y, instance$X, R = 1,
       rvar = FALSE, cvar = FALSE, dcor = FALSE, nvar = FALSE,
-      symmetric = TRUE, plot = FALSE, model = unname(lf[names(lf) %in% dynamic$family]),
-      seed = static$seed, print = FALSE,
-      nscan = static$ame_mcmc, odens = static$thin)
+      symmetric = TRUE, plot = FALSE, model = unname(lf[names(lf) %in% instance$family]),
+      seed = data$seed, print = FALSE,
+      nscan = data$ame_mcmc, odens = data$thin)
 
     raft <- as.numeric(max(raftery.diag(as.mcmc(fit$BETA))$resmatrix[, 2]))
-    if (m > raft | iter == static$maxit) {
+    if (data$ame_mcmc > raft | iter == data$maxit) {
       flag <- FALSE
     } else {
       iter <- iter + 1
-      static$ame_mcmc <- static$ame_mcmc * 2
+      data$ame_mcmc <- raft * data$thin
     }
   }
 
-  pred <- colMeans(fit$BETA %*% t(as.matrix(cbind(1, dynamic$X_stack)))) +
+  pred <- colMeans(fit$BETA %*% t(as.matrix(cbind(1, instance$X_stack)))) +
     stack_matrix(fit$U %*% t(fit$U))
 
   list(
     "pred" = pred,
     "estimate" = mean(fit$BETA[, 2]),
     "interval" = HPDinterval(as.mcmc(fit$BETA[, 2])),
-    "loss" = ms_error(unstack_vector(pred, dynamic$nodes), dynamic$y_new),
-    "loss" = ms_error(pred, dynamic$y_stack_new),
+    ## "loss" = ms_error(unstack_vector(pred, instance$nodes), instance$y_new),
+    "loss" = ms_error(pred, instance$y_stack_new),
     "convergence" = raft,
-    "data" = dynamic,
+    "data" = instance,
     "fit" = fit
   )
   
 }
 
-lsm.wrapper <- function(static, dynamic, ...) {
+lsm.wrapper <- function(data, job, instance, ...) {
   dots <- list(...)
-  net <- create_network(dynamic$y)
-  .GlobalEnv$X <- dynamic$X ## fuck you latentet
+  net <- create_network(instance$y)
+  .GlobalEnv$X <- instance$X ## fuck you latentet
 
   lf <- c("gaussian" = "Gaussian", "binomial" = "Bernoulli", "poisson" = "Poisson")
 
-  fam.par <- list("prior.var" = static$sigma, "prior.var.df" = dynamic$nodes)
-  if (dynamic$family != "gaussian") fam.par <- NULL
+  fam.par <- list("prior.var" = data$sigma, "prior.var.df" = instance$nodes)
+  if (instance$family != "gaussian") fam.par <- NULL
 
   flag <- TRUE
   iter <- 1
-  formula <- paste0("net ~ edgeocov(X)")
+  formula <- paste0("net ~ edgecov(X)")
   while (flag) {
-    if (bilinear)
+    if (instance$bilinear)
       form <- paste0(formula, "+ bilinear(d = 1)")
     else
       form <- paste0(formula, "+ euclidean(d = 1)")
     system.time(fit <- ergmm(as.formula(form),
-                 "eweight", unname(lf[names(lf) %in% dynamic$family]),
-                 fam.par = fam.par, prior = prior,
-                 tofit = c("mcmc", "pmode"), seed = static$seed,
-                 control = static$control))
+                 "eweight", unname(lf[names(lf) %in% instance$family]),
+                 fam.par = fam.par, prior = ergmm.prior(),
+                 tofit = c("mcmc", "pmode"), seed = data$seed,
+                 control = data$control))
     ## assess convergence, re-run if necessary
     geweke <- geweke.diag(as.mcmc(fit)[[1]])$z
-    if (abs(unname(geweke[["lpY"]])) < 1 | iter == static$maxit) {
+    if (abs(unname(geweke[["lpY"]])) < 1 | iter == data$maxit) {
       flag <- FALSE
     } else {
       iter <- iter + 1
-      static$control$sample.size <- static$control$sample.size * 2
+      data$control$sample.size <- data$control$sample.size * 2
     }
     flag <- FALSE
   }
 
-  pred <- predict(fit, newdata = create_network(dynamic$y_new, dynamic$X), type = "pmode")
+  pred <- predict(fit, newdata = create_network(instance$y_new, instance$X), type = "pmode")
   
   list(
     "pred" = pred,
     "estimate" = fit$mcmc.pmode$beta[2],
     "interval" = HPDinterval(as.mcmc(fit$sample$beta[, 2])),
-    "loss" = ms_error(pred, dynamic$y_new),
+    "loss" = ms_error(pred, instance$y_new),
     "convergence" = geweke,
-    "data" = dynamic,
+    "data" = instance,
     "fit" = fit
   )
 }
 
-glm.wrapper <- function(static, dynamic, ...) {
-  fit <- glm(y ~ X, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack))
-  pred <- predict(fit, newdata = dynamic$X_stack, se.fit = TRUE, type = "response")
+glm.wrapper <- function(data, job, instance, ...) {
+  fit <- glm(y ~ X, instance$family, data.frame(instance$X_stack, "y" = instance$y_stack))
+  pred <- predict(fit, newdata = instance$X_stack, se.fit = TRUE, type = "response")
   list(
     "pred" = pred,
     "estimate" = unname(coef(fit)[2]),
-    "adjustment" = sqrt(3.29 + var(dynamic$d)) / sqrt(3.29),
-    "interval" = confint(fit, colnames(dynamic$X_stack)),
-    "loss" = ms_error(pred$fit, dynamic$y_stack_new),
-    "data" = dynamic,
+    "adjustment" = sqrt(3.29 + var(instance$d)) / sqrt(3.29),
+    "interval" = confint(fit, colnames(instance$X_stack)),
+    "loss" = ms_error(pred$fit, instance$y_stack_new),
+    "data" = instance,
     "fit" = fit
   )
 }
 
-truth.wrapper <- function(static, dynamic, ...) {
-  fit <- glm(y ~ X + d, dynamic$family, data.frame(dynamic$X_stack, "y" = dynamic$y_stack, "d" = dynamic$d))
-  pred <- predict(fit, newdata = data.frame(dynamic$X_stack, "d" = dynamic$d), se.fit = TRUE, type = "response")
+truth.wrapper <- function(data, job, instance, ...) {
+  fit <- glm(y ~ X + d, instance$family, data.frame(instance$X_stack, "y" = instance$y_stack, "d" = instance$d))
+  pred <- predict(fit, newdata = data.frame(instance$X_stack, "d" = instance$d),
+    se.fit = TRUE, type = "response")
   list(
     "pred" = pred,
     "estimate" = unname(coef(fit)[2]),
-    "adjustment" = sqrt(3.29 + var(dynamic$d)) / sqrt(3.29),
-    "interval" = confint(fit, colnames(dynamic$X_stack)),
-    "loss" = ms_error(pred$fit, dynamic$y_stack_new),
-    "data" = dynamic,
+    "adjustment" = sqrt(3.29 + var(instance$d)) / sqrt(3.29),
+    "interval" = confint(fit, colnames(instance$X_stack)),
+    "loss" = ms_error(pred$fit, instance$y_stack_new),
+    "data" = job,
     "fit" = fit
   )
 }
 
-reg <- makeExperimentRegistry("lsm", "reg")
+reg <- makeExperimentRegistry("lsm")
 
-addProblem(reg, "euclidean.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
-  static = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
+addProblem("euclidean.test", fun = create_data, seed = 1234,
+  data = list(p = 2, sigma = 1, seed = 1234, maxit = 2,
     control = ergmm.control(sample.size = 10000, burnin = 10000, interval = 100),
     bilinear = FALSE))
 
-addProblem(reg, "billinear.test", dynamic = create_data, seed = 1234, overwrite = TRUE,
-  static = list(p = 2, sigma = 1, seed = 1234, maxit = 2, bilinear = TRUE,
-    ame_mcmc = 100000))
+addProblem("bilinear.test", fun = create_data, seed = 1234,
+  data = list(p = 2, sigma = 1, seed = 1234, maxit = 2, bilinear = TRUE, ame_mcmc = 100000,
+    thin = 25))
 
 euclidean.pars <- list(
   "eta" = c(.1, 1, 100, 1000000),
@@ -241,37 +241,20 @@ bilinear.pars <- list(
   "latent_space" = c(1, 0)
 )
 
-euclidean.problem.design <- makeDesign("euclidean.test", exhaustive = euclidean.pars)
-bilinear.problem.design <- makeDesign("bilinear.test", exhaustive = bilinear.pars)
+addAlgorithm("lsm", lsm.wrapper)
+addAlgorithm("amen", amen.wrapper)
+addAlgorithm("glm", glm.wrapper)
+addAlgorithm("truth", truth.wrapper)
 
-lsm.pars <- list(## "scale" = c(TRUE, FALSE), ## this was removed in the 2nd version
-                 "beta.var" = c(1, 10))
-glm.pars <- list()
-truth.pars <- list()
-amen.pars <- list()
+addExperiments(list("euclidean.test" = expand.grid(euclidean.pars, stringsAsFactors = FALSE)),
+  list("lsm" = data.frame("beta.var" = c(1, 10)),
+    "glm" = data.frame(), "truth" = data.frame()), 500)
 
-lsm.design <- makeDesign("lsm", exhaustive = lsm.pars)
-glm.design <- makeDesign("glm", exhaustive = glm.pars)
-truth.design <- makeDesign("truth", exhaustive = truth.pars)
-amen.design <- makeDesign("amen", exhaustive = amen.pars)
+addExperiments(list("bilinear.test" = expand.grid(bilinear.pars, stringsAsFactors = FALSE)),
+  list("amen" = data.frame(), "glm" = data.frame(), "truth" = data.frame()), 500)
 
-addAlgorithm(reg, "amen", amen.wrapper, overwrite = TRUE)
-addAlgorithm(reg, "lsm", lsm.wrapper, overwrite = TRUE)
-addAlgorithm(reg, "glm", glm.wrapper, overwrite = TRUE)
-addAlgorithm(reg, "truth", truth.wrapper, overwrite = TRUE)
-
-addExperiments(reg, euclidean.design, list("lsm" = lsm.design, "glm" = glm.design,
-  "truth" = truth.design), ## "amen" = amen.design,
-  repls = 500, skip.defined = TRUE)
-batchExport(reg, create_network = create_network, ms_error = ms_error,
-  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
-  overwrite = TRUE)
-
-addExperiments(reg, bilinear.design, list("amen" = amen.design, "truth" = truth.design), 
-  repls = 500, skip.defined = TRUE)
-batchExport(reg, create_network = create_network, ms_error = ms_error,
-  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
-  overwrite = TRUE)
+batchExport(list(create_network = create_network, ms_error = ms_error,
+  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic))
 
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
