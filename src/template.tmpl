@@ -1,13 +1,10 @@
-#PBS -N <%= job.name %>
-## merge standard error and output
-#PBS -j oe
-## direct streams to our logfile
+#PBS -N <%= paste0("zmjones", job.hash) %>
 #PBS -o <%= log.file %>
 #PBS -l walltime=<%= resources$walltime %>
-#PBS -l nodes=<%= resources$nodes %>,mem=<%= resources$memory %>
+#PBS -l nodes=<%= resources$nodes %>
+#PBS -l mem=<%= resources$memory %>
 #PBS -A bbd5087_collab
+#PBS -j oe
 
-## Run R:
-## we merge R output with stdout from PBS, which gets then logged via -o option
 module load R
-R CMD BATCH --vanilla "<%= rscript %>" /dev/stdout
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'

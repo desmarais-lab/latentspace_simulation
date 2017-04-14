@@ -1,7 +1,7 @@
-pkgs <- c("dplyr", "reshape2", "ggplot2", "stringr", "coda", "scales")
+pkgs = c("dplyr", "reshape2", "ggplot2", "stringr", "coda", "scales")
 invisible(lapply(pkgs, library, character.only = TRUE))
 
-results <- read.csv("results.csv", stringsAsFactors = FALSE) %>%
+results = read.csv("results.csv", stringsAsFactors = FALSE) %>%
   select(-one_of("X", "prob", "repl", "id")) %>%
   rename(model = algo) %>%
   mutate(model = ifelse(!is.na(scale) & scale, "lsm_scaled", model)) %>%
@@ -16,7 +16,7 @@ results <- read.csv("results.csv", stringsAsFactors = FALSE) %>%
             coverage = mean(coverage, na.rm = TRUE),
             bias = mean(bias, na.rm = TRUE),
             error = mean(error, na.rm = TRUE))
-results$family[results$family == "binomial"] <- "bernoulli"
+results$family[results$family == "binomial"] = "bernoulli"
 
 ggplot(results, aes(eta, n, color = model, linetype = model)) +
   scale_x_log10(breaks = c(1, 100, 1000000), labels = c("uniform correlation", "low correlation", "independence")) +
