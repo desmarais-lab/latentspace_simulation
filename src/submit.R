@@ -22,11 +22,11 @@ reducer = function(x) {
   if (all(is.na(x)) | is.null(x)) {
     ret = list("estimate" = NA, "coverage" = NA, "loss" = NA)
   } else {
-    ret = tryCatch(list("estimate" = ifelse("glm" %in% class(x$fit) &
-      x$data$latent_space == 1 & x$data$family == "binomial",
-      x$estimate * x$adjustment, x$estimate)), error = function(e) x$fit)
-    ret$coverage = tryCatch(unname(ifelse(x$interval[1] * x$adjustment < 0 &
-      x$interval[2] * x$adjustment > 0, 1, 0)), error = function(e) e)
+    adjustment = ifelse("glm" %in% class(x$fit) &
+      x$data$latent_space == 1 & x$data$family == "binomial", x$adjustment, 1)
+    ret = tryCatch(list("estimate" = x$estimate * adjustment), error = function(e) e)
+    ret$coverage = tryCatch(unname(ifelse(x$interval[1] * adjustment < 0 &
+      x$interval[2] * adjustment > 0, 1, 0)), error = function(e) e)
     ret$loss = tryCatch(x$loss, error = function(e) e)
   }
   return(ret)
@@ -37,11 +37,12 @@ target = makeRegistry(file.dir = "results", make.default = FALSE)
 target$cluster.functions = makeClusterFunctionsTORQUE("template.tmpl")
 batchMapResults(reducer, done, target = target)
 ids = getJobTable(reg = target)
-ids[, chunk := chunk(job.id, n.chunks = 100)]
+ids[, chunk := chunk(job.id, n.chunks = 50)]
 ids[, chunk := .GRP, by = "chunk"]
 submitJobs(ids, reg = target, resources = resources)
 
-res = reduceResultsList(reg = target, missing.val = NA)
+res = reduceResultsList(reg = target, missing.val = list("estimate" = NA,
+  "coverage" = NA, "loss" = NA))
 res = rbindlist(res, fill = TRUE)
 res = cbind(res, getJobPars(done))
 fwrite(res, "results_amen.csv")
