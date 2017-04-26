@@ -209,7 +209,7 @@ truth.wrapper = function(data, job, instance, ...) {
     "adjustment" = sqrt(3.29 + var(instance$d)) / sqrt(3.29),
     "interval" = confint(fit, colnames(instance$X_stack)),
     "loss" = ms_error(pred$fit, instance$y_stack_new),
-    "data" = job,
+    "data" = instance,
     "fit" = fit
   )
 }
@@ -254,8 +254,7 @@ addExperiments(list("bilinear.test" = expand.grid(bilinear.pars, stringsAsFactor
   list("amen" = data.frame(), "glm" = data.frame(), "truth" = data.frame()), 500)
 
 batchExport(list(create_network = create_network, ms_error = ms_error,
-  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic,
-  stack_matrix = stack_matrix))
+  rmvnorm_d = rmvnorm_d, unstack_vector = unstack_vector, diagnostic = diagnostic))
 
 ## generate a histogram plot for the off diagnoals of the covariance matrix used to generate
 ## d and X_stack
