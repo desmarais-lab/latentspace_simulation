@@ -2,6 +2,12 @@ pkgs = c("batchtools", "latentnet", "amen", "foreach", "clusterGeneration",
   "iterators", "network", "mvtnorm", "coda")
 invisible(lapply(pkgs, library, character.only = TRUE))
 
+predict.ame = function(object, instance) {
+  ret = colMeans(object$BETA %*% t(cbind(1, instance$X_stack))) +
+    stack_matrix(object$ULUPM)
+  if (instance$family == "binomial") pnorm(ret) else ret
+}
+
 create_network = function(y, name = "eweight") {
   net = network(y, directed = FALSE)
   el = as.matrix(net, "edgelist")
@@ -24,12 +30,7 @@ rmvnorm_d = function(sigma, d) {
     t(apply(mu_x, 2, function(mu) rmvnorm(1, mu, sigma_x)))
 }
 
-ms_error = function(x, y, each_column = FALSE) {
-  if (each_column)
-    sapply((x - y)^2, mean)
-  else
-    mean((x - y)^2)
-}
+ms_error = function(x, y) mean((x - y)^2)
 
 unstack_vector = function(x, n) {
   idx = t(combn(1:n, 2))
@@ -70,16 +71,16 @@ create_data = function(data, job, p, eta, nodes, family, beta, latent_space, ...
   X = (X - colMeans(X)) / apply(X, 2, sd)
   lp = beta * X + latent_space * d
   y_stack = switch(family,
-                    gaussian = rnorm(length(lp), lp, data$sigma),
-                    binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
-                    poisson = rpois(length(lp), exp(lp)))
+    gaussian = rnorm(length(lp), lp, data$sigma),
+    binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
+    poisson = rpois(length(lp), exp(lp)))
   y = unstack_vector(y_stack, nodes)
   X_stack = data.frame(X)
   X = unstack_vector(X, nodes)
   y_stack_new = switch(family,
-                        gaussian = rnorm(length(lp), lp, data$sigma),
-                        binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
-                        poisson = rpois(length(lp), exp(lp)))
+    gaussian = rnorm(length(lp), lp, data$sigma),
+    binomial = rbinom(length(lp), 1, 1 / (1 + exp(-(lp)))),
+    poisson = rpois(length(lp), exp(lp)))
   y_new = unstack_vector(y_stack_new, nodes)
   ret = list(
     p = if (family == "binomial") plogis(lp) else NULL,
@@ -122,15 +123,16 @@ amen.wrapper = function(data, job, instance, ...) {
     }
   }
 
-  pred = colMeans(fit$BETA %*% t(as.matrix(cbind(1, instance$X_stack)))) +
-    stack_matrix(fit$U %*% t(fit$U))
+  pred = predict.ame(fit, instance)
+  ## pred = colMeans(fit$BETA %*% t(cbind(1, instance$X_stack))) +
+  ##   stack_matrix(fit$U %*% t(fit$U))
 
   list(
     "pred" = pred,
     "estimate" = mean(fit$BETA[, 2]),
     "interval" = HPDinterval(as.mcmc(fit$BETA[, 2])),
-    ## "loss" = ms_error(unstack_vector(pred, instance$nodes), instance$y_new),
-    "loss" = ms_error(pred, instance$y_stack_new),
+    "loss" = ms_error(unstack_vector(pred, instance$nodes), instance$y_new),
+    ## "loss" = ms_error(pred, instance$y_stack_new),
     "convergence" = raft,
     "data" = instance,
     "fit" = fit

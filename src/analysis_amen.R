@@ -3,10 +3,11 @@ invisible(lapply(pkgs, library, character.only = TRUE))
 
 results = fread("results_amen.csv") %>%
   filter(eta != .1 & !(algorithm == "truth" & latent_space == 0) &
-           algorithm != "lsm" & !(latent_space == -1)) %>%
+    algorithm != "lsm" & !(latent_space == -1) & family != "poisson" & nodes != 50) %>%
   mutate(bias = estimate - beta,
     error = ifelse(beta == 0, 1 - coverage, coverage),
-    type = ifelse(beta == 0, 1, 2)) %>%
+    type = ifelse(beta == 0, 1, 2),
+    family = ifelse(family == "binomial", "bernoulli", family)) %>%
   group_by(algorithm, family, eta, beta, type, latent_space, nodes) %>%
   summarise(n = length(estimate[!is.na(estimate)]),
             estimate = mean(estimate, na.rm = TRUE),
@@ -14,7 +15,6 @@ results = fread("results_amen.csv") %>%
             coverage = mean(coverage, na.rm = TRUE),
             bias = mean(bias, na.rm = TRUE),
             error = mean(error, na.rm = TRUE))
-results$family[results$family == "binomial"] = "bernoulli"
 
 ggplot(results, aes(eta, n, color = algorithm, linetype = algorithm)) +
   scale_x_log10(breaks = c(1, 100, 1000000), labels = c("uniform correlation", "low correlation", "independence")) +

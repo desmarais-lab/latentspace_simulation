@@ -11,11 +11,17 @@ resources = list(walltime = 86400L * 1, nodes = 1L, memory = "8gb")
 ## find ids for jobs not executed or on system, chunk them, and send them
 ## to the scheduler
 ids = getJobTable()[, .(job.id, problem, algorithm, nodes)]
-exclusions = rbind(findOnSystem(), findDone())
-ids[, chunk := chunk(job.id, chunk.size = 100), by = "problem"]
-ids[, chunk := .GRP, by = c("problem", "chunk")]
-chunks.to.submit = sort(unique(ids[ids$problem == "bilinear.test", chunk]))
-submitJobs(ids[ids$chunk %in% chunks.to.submit & !ids$job.id %in% exclusions$job.id & ids$nodes != 50, ], resources = resources)
+exclusions = rbind(findOnSystem(), findDone(), findStarted())
+ids = ids[!job.id %in% exclusions$job.id, ]
+amen.experiments = findExperiments("bilinear.test", algo.name = "amen",
+  ids = ids[!job.id %in% exclusions$job.id, ])
+## amen.pars = getJobPars(amen.experiments)
+## amen.to.time = amen.pars[, .SD[1, ], by = nodes]$job.id
+## amen.timing = sapply(amen.to.time, function(x) system.time(testJob(x)))
+## amen.chunksize = sapply(((24 * 60 * 60) / amen.timing) * .75, floor)
+amen.experiments[, chunk := chunk(job.id, chunk.size = 25)]
+
+submitJobs(amen.experiments[chunk < 100], resources = resources)
 getStatus(ids[ids$nodes != 50 & ids$problem == "bilinear.test", "job.id"])
 
 reducer = function(x) {
@@ -27,7 +33,9 @@ reducer = function(x) {
     ret = tryCatch(list("estimate" = x$estimate * adjustment), error = function(e) e)
     ret$coverage = tryCatch(unname(ifelse(x$interval[1] * adjustment < 0 &
       x$interval[2] * adjustment > 0, 1, 0)), error = function(e) e)
-    ret$loss = tryCatch(x$loss, error = function(e) e)
+    ret$loss = tryCatch(ifelse(all(class(x$fit) == "ame"),
+      ms_error(unstack_vector(predict.ame(x$fit, x$data), x$data$nodes), x$data$y_new),
+      x$loss), error = function(e) e)
   }
   return(ret)
 }
@@ -36,13 +44,17 @@ done = findDone()
 target = makeRegistry(file.dir = "results", make.default = FALSE)
 target$cluster.functions = makeClusterFunctionsTORQUE("template.tmpl")
 batchMapResults(reducer, done, target = target)
+batchExport(list(ms_error = ms_error, unstack_vector = unstack_vector,
+  predict.ame = predict.ame, stack_matrix = stack_matrix), reg = target)
 ids = getJobTable(reg = target)
-ids[, chunk := chunk(job.id, n.chunks = 50)]
-ids[, chunk := .GRP, by = "chunk"]
+ids[, chunk := chunk(job.id, n.chunks = 2)]
 submitJobs(ids, reg = target, resources = resources)
 
 res = reduceResultsList(reg = target, missing.val = list("estimate" = NA,
   "coverage" = NA, "loss" = NA))
+## pars = getJobPars(done)
+to_reset = ids[job.id %in% findErrors(reg = target)$job.id, ]
+pars = getJobPars(done[!job.id %in% to_reset$"..id"])
 res = rbindlist(res, fill = TRUE)
-res = cbind(res, getJobPars(done))
+res = cbind(res, pars)
 fwrite(res, "results_amen.csv")
