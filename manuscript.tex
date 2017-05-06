@@ -228,7 +228,7 @@ We compute the MLE estimated by iteratively reweighted least squares via the \te
 
 For each combination of simulation conditions we evaluate the mean square prediction error of the model on new edges drawn condtional on $\mathbf{x}$ and $\mathbf{d}$, the bias of the estimated coefficient for the measured covariate, and the Type-1 and 2 error rates. Inference regarding Credible intervals for $\beta$ are defined by using the region of highest posterior density which covers $95\%$ of the marginal posterior distribution \cite{turkkan1993computation}. We consider $\beta$ to be statistically significant at the 0.05 level if the 95\% credible interval excludes 0.
 
-We also repeat this simulation study using \texttt{amen} \citep{hoff2015dyadic, minhas2016inferential}. We omit the poisson family, and, due to the computational cost of the simulation, we consider only networks with 25 nodes or 100 nodes. Rather than constructing an omitted variable as described above, we draw from a standard normal distribution $\mathbf{u}$, and, because we are considering symmetric networks, take the outer product of $\mathbf{u}$ with itself to construct the latent factor. We take 100,000 MCMC samples after x burn-in iterations, and we assess convergence using the diagnostic of \cite{raftery1992practical}.
+We also repeat this simulation study using \texttt{amen} \citep{hoff2015dyadic, minhas2016inferential}. We omit the poisson family, and, due to the computational cost of the simulation, we consider only networks with 25 nodes or 100 nodes. Rather than constructing an omitted variable as described above, we draw from a standard normal distribution $\mathbf{u}$, and, because we are considering symmetric networks, take the outer product of $\mathbf{u}$ with itself to construct the latent factor. We take 100,000 MCMC samples after 500 burn-in iterations, and we assess convergence using the diagnostic of \cite{raftery1992practical}.
 
 \subsection{Results}
 
@@ -265,7 +265,7 @@ The last property we consider in comparing the GLM and LSM is generalization err
 \caption{The $x$-axis shows a Monte Carlo estimate of the mean square error for edge values drawn from the appropriate distribution with the observed covariate $\mathbf{x}$ and the latent positions $\mathbf{z}$ fixed. In the Bernoulli case the Brier score is computed and in the poisson and normal cases the mean-square-error. \label{fig:generalization}}
 \end{figure}
 
-In our repetition of this simulation with \texttt{amen} we find similar results, with the exception of type-2 error rates, which, as expected, are substantially lower for \texttt{amen}. However, type-1 error rates remain elevated, as is bias in the case where there is a latent dependence structure that is correlated with the observed covariate. \texttt{amen} does perform better in the case where it is used despite the absence of such a latent dependence structure though, relative to \texttt{latentnet}, which is to be expected given that it outperforms \texttt{latentnet} in terms of type-2 error. Again, \texttt{amen} performs well in terms of generalization error, coming close to the theoretical lower bound.
+In our repetition of this simulation with \texttt{amen} we find similar results, with the exception of type-2 error rates, which, as expected, are substantially lower for \texttt{amen}. However, type-1 error rates remain elevated, as is bias in the case where there is a latent dependence structure that is correlated with the observed covariate. \texttt{amen} does perform better in the case where it is used despite the absence of such a latent dependence structure though, relative to \texttt{latentnet}, which is to be expected given that it outperforms \texttt{latentnet} in terms of type-2 error. Again, \texttt{amen} performs well in terms of generalization error, coming close to the theoretical lower bound. The results of our simulations with \texttt{amen} are available in the Online Appendix.
 
 \section{Conclusion}
 
@@ -278,5 +278,36 @@ The key recommendation arising from our results is that researchers not use the 
 
 \bibliographystyle{apsr}
 \bibliography{ref}
+
+\newpage
+\section*{Online Appendix}
+Below we replicate the simulation study results figures using the results from our simulation with the recently developed \texttt{amen} package. Note that these simulations exclude (1) the Poisson family, which is not available in the \texttt{amen} package, and (2) the 50-node networks, which we left out in the interest of lessening the computational burden of the simulation.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figures/estimation_ls.png}
+\caption{The bias of estimates of the effect of the observed covariate $\mathbf{x}$ when there is an ommitted variable. The $x$-axis gives the value of the parameter $\eta$ which controls the degree of dependence between $\mathbf{x}$ and ommitted covariate. Lower values of $\eta$ indicate higher levels of dependence between the observed and ommitted covariate. The $y$-axis gives a Monte Carlo estimate of the bias. The number of nodes are indicated in the top panels, while the distributional family of the edges is shown on the right panel. Each panel represents 4 values of $\eta$ with 1,000 Monte Carlo iterations executed at each point.
+\label{fig:estimation_ls}}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figures/estimation_nls.png}
+\caption{The bias of estimates of the effect of the observed covariate $\mathbf{x}$ when there is no ommitted variable.
+\label{fig:estimation_nls}}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figures/inference_type_1.png}
+\caption{Monte Carlo estimates of the Type-1 error regarding the effect of the observed covariate $\mathbf{x}$ are shown on the $y$-axis. Here, $\beta = 0$ and the error rate shown in each panel in that row gives 1 minus the probability of a 95\% confidence region (for the LSM) or interval (for the GLM) including $0$, giving the probability that a true null hypothesis of $\beta = 0$ is falsely rejected. \label{fig:inference_type_1}}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figures/inference_type_2.png}
+\caption{Monte Carlo estimates of the Type-2 error regarding the effect of the observed covariate $\mathbf{x}$ are shown on the $y-axis$. Here, $\beta = 1$, and the error rate shown in each panel in each row gives the probability of the probability/confidence intervals covering $0$, giving the probability of accepting a false null hypothesis. \label{fig:inference_type_2}}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figures/generalization.png}
+\caption{The $x$-axis shows a Monte Carlo estimate of the mean square error for edge values drawn from the appropriate distribution with the observed covariate $\mathbf{x}$ and the latent positions $\mathbf{z}$ fixed. In the Bernoulli case the Brier score is computed and in the poisson and normal cases the mean-square-error. \label{fig:generalization}}
+\end{figure}
 
 \end{document}
