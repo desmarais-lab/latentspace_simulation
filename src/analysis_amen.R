@@ -25,7 +25,7 @@ ggplot(results, aes(eta, n, color = algorithm, linetype = algorithm)) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("iterations_amen.png", width = 12, height = 8, scale = .65)
+ggsave("iterations_amen.png", width = 12, height = 8, scale = .75)
 
 ggplot(filter(results, beta == 1), aes(eta, loss,
   color = algorithm, linetype = algorithm)) +
@@ -36,7 +36,7 @@ ggplot(filter(results, beta == 1), aes(eta, loss,
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("generalization_amen.png", width = 12, height = 8, scale = .65)
+ggsave("generalization_amen.png", width = 12, height = 8, scale = .75)
 
 ggplot(filter(results, beta == 1, latent_space == 1),
   aes(eta, bias, color = algorithm, linetype = algorithm)) +
@@ -48,7 +48,7 @@ ggplot(filter(results, beta == 1, latent_space == 1),
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("estimation_ls_amen.png", width = 10, height = 8, scale = .65)
+ggsave("estimation_ls_amen.png", width = 10, height = 8, scale = .75)
 
 ggplot(filter(results, beta == 1, latent_space == 0),
   aes(eta, bias, color = algorithm, linetype = algorithm)) +
@@ -60,7 +60,7 @@ ggplot(filter(results, beta == 1, latent_space == 0),
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("estimation_nls_amen.png", width = 10, height = 8, scale = .65)
+ggsave("estimation_nls_amen.png", width = 10, height = 8, scale = .75)
 
 ggplot(filter(results, type == 1),
   aes(eta, error, color = algorithm, linetype = algorithm)) +
@@ -72,7 +72,7 @@ ggplot(filter(results, type == 1),
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("inference_type_1_amen.png", width = 12, height = 8, scale = .65)
+ggsave("inference_type_1_amen.png", width = 12, height = 8, scale = .75)
 
 ggplot(filter(results, type == 2), aes(eta, error, color = algorithm, linetype = algorithm)) +
   scale_x_log10(breaks = c(1, 100, 1000000), labels = c("uniform correlation", "low correlation", "independence")) +
@@ -83,4 +83,4 @@ ggplot(filter(results, type == 2), aes(eta, error, color = algorithm, linetype =
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("inference_type_2_amen.png", width = 12, height = 8, scale = .65)
+ggsave("inference_type_2_amen.png", width = 12, height = 8, scale = .75)

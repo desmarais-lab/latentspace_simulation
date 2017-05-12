@@ -28,7 +28,7 @@ ggplot(results, aes(eta, n, color = model, linetype = model)) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("iterations.png", width = 12, height = 8, scale = .65)
+ggsave("iterations.png", width = 12, height = 8, scale = .75)
 
 ggplot(filter(results, beta == 1), aes(eta, loss, color = model, linetype = model)) +
   scale_x_log10(breaks = c(1, 100, 1000000), labels = c("uniform correlation", "low correlation", "independence")) +
@@ -38,7 +38,7 @@ ggplot(filter(results, beta == 1), aes(eta, loss, color = model, linetype = mode
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("generalization.png", width = 12, height = 8, scale = .65)
+ggsave("generalization.png", width = 12, height = 8, scale = .75)
 
 ggplot(filter(results, beta == 1, latent_space == -1),
        aes(eta, bias, color = model, linetype = model)) +
@@ -50,7 +50,7 @@ ggplot(filter(results, beta == 1, latent_space == -1),
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("estimation_ls.png", width = 10, height = 8, scale = .65)
+ggsave("estimation_ls.png", width = 10, height = 8, scale = .75)
 
 ggplot(filter(results, beta == 1, latent_space == 0),
        aes(eta, bias, color = model, linetype = model)) +
@@ -62,7 +62,7 @@ ggplot(filter(results, beta == 1, latent_space == 0),
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("estimation_nls.png", width = 10, height = 8, scale = .65)
+ggsave("estimation_nls.png", width = 10, height = 8, scale = .75)
 
 ggplot(filter(results, type == 1), aes(eta, error, color = model, linetype = model)) +
   scale_x_log10(breaks = c(1, 100, 1000000), labels = c("uniform correlation", "low correlation", "independence")) +
@@ -73,7 +73,7 @@ ggplot(filter(results, type == 1), aes(eta, error, color = model, linetype = mod
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("inference_type_1.png", width = 12, height = 8, scale = .65)
+ggsave("inference_type_1.png", width = 12, height = 8, scale = .75)
 
 ggplot(filter(results, type == 2), aes(eta, error, color = model, linetype = model)) +
   scale_x_log10(breaks = c(1, 100, 1000000), labels = c("uniform correlation", "low correlation", "independence")) +
@@ -84,4 +84,4 @@ ggplot(filter(results, type == 2), aes(eta, error, color = model, linetype = mod
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom",
     plot.title = element_text(hjust = 0.5))
-ggsave("inference_type_2.png", width = 12, height = 8, scale = .65)
+ggsave("inference_type_2.png", width = 12, height = 8, scale = .75)
