@@ -1,0 +1,180 @@
+\documentclass[11pt]{article}
+\usepackage[pdftex]{graphics}
+\usepackage{amsmath,amssymb,rotating,multirow}
+\usepackage{times}
+\usepackage{url}
+
+\usepackage{booktabs}
+
+\usepackage{subfigure}
+
+\usepackage[longnamesfirst]{natbib}
+
+\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+
+%\usepackage{parskip}
+\usepackage{setspace}
+
+\usepackage{geometry}
+\geometry{verbose,letterpaper}
+
+\setlength{\parskip}{0pt}
+
+\renewenvironment{quote}{\list{}{\listparindent=1.5em\itemindent=\listparindent\rightmargin=1.65cm\leftmargin=1.65cm}\item\relax}{\endlist}
+
+\newcommand{\comment}[1]{}
+
+\title{Inferring the Effects of Observed Covariates in\\ Latent Space
+  Models for Networks}
+
+\author{Zachary Jones, Matthew Denny, Bruce Desmarais, Hanna Wallach}
+\date{\today}
+
+\bibliographystyle{chicago}
+
+\begin{document}
+
+\singlespacing
+\maketitle
+
+\thispagestyle{empty}
+
+% TODO: Consider rewriting the abstract to talk about type I vs. type
+% II error and the fact that only type II error has been addressed.
+
+\begin{abstract}
+  \noindent Due to the complex dependencies found in network data,
+  scholars draw upon an increasingly sophisticated toolkit for
+  statistical inference. The latent space model (LSM) models the edges
+  in a network via a combination of the generalized linear model (GLM)
+  and a latent spatial embedding of the network's nodes. In many
+  applications, researchers have assumed that this embedding can
+  control for unmeasured confounding network structure. However, there
+  has been little research that considers whether this is indeed the
+  case. Via a simulation study, we investigate the LSM's ability to
+  control for unmeasured confounding network structure. We find that
+  under even moderate confounding, the LSM does not exhibit lower
+  estimation error or inference error than the GLM; it does, however,
+  exhibit substantially lower prediction error. We therefore conclude
+  that the LSM is most appropriate for predictive or exploratory
+  analyses.
+\end{abstract}
+
+% latent spatial embedding of the network's nodes
+
+% complex dependencies
+% dependencies such as reciprocity, transitivity, and homophily
+
+% unmeasured counfounding variables
+% unmeasured confounding network structure
+
+% estimation error
+% biased estimates of covariate effects
+
+% inference error
+% errors in hypothesis testing
+
+% prediction error
+
+% exploratory analyses, inferential analysis, predictive analysis
+
+% observed covariates
+% observed covariates of interest
+
+% NOTE: ``confounding variables'' are correlated with both the
+% dependent (edge values) and independent variables (covariates).
+
+% NOTE: ``unmeasured confounding variables'' means that the
+% confounding variables are omitted from the model.
+
+% NOTE: Controlling for unmeasured confounding variables often means
+% measuring them and including them in the model.
+
+\section{Introduction}
+
+% LSM wasn't developed to account for unmeasured confounding network
+% structure, so should NOT talk about it in that same sentence. TODO:
+% Rewrite to say that although it wasn't developed for this purpose,
+% the LSM is often assumed to control for confounding variables.
+
+% Regarding this, Bruce says: ERGM and SAOM were designed for fully
+% specifying the network model, including how covariates effect the
+% edges, and how edges relate to each other. ERGM and SAOM do not
+% involve any latent variables. In other words, when the analyst is
+% using ERGM or SAOM (s)he is assuming to know the correct form of the
+% model, and measure all of the data needed to estimate the model.
+
+% The ``unmeasured'' part does not apply to ERGM and SAOM. All of
+% these models were designed to account for structural predictors of
+% tie formation (e.g., you and I are tied because we have a mutual
+% friend---also in the network---who introduced us, not because of our
+% background covariates). In ERGM and SAOM you need to explicitly
+% specify the functional form of these dependencies in order to
+% account for them. By specifying them exactly they are measured on
+% the network while fitting the model. The downside is that ERGM does
+% not account for any dependencies that are not specified by the
+% researcher. With the LSM, the big matrix of latent variables is
+% supposed to absorb these dependencies, as well as omitted features.
+
+Inferential analyses of network data have grown increasingly
+sophisticated in recent years. Scholars are well-versed in the risks
+associated with ignoring unmeasured confounding network structure. If
+not accounted for, dependencies such as reciprocity, transitivity, and
+homophily can lead to biased estimates of covariate effects and to
+hypothesis testing errors, in much the same way that omitted-variable
+bias can affect conventional regression analyses
+\citep{ward07disputes,kinne14dependent,cranmer17critique,hays10spatial}. Researchers
+have therefore proposed a number of statistical models to account for
+unmeasured confounding network structure, including the exponential
+random graph model \citep[ERGM;
+  e.g.,][]{lazer10coevolution,cranmer11inferential,desmarais12micro-level},
+the stochastic actor-oriented model \citep[SAOM;
+  e.g.,][]{berardo10self-organizing,kinne14dependent}, and the latent
+space model \citep[LSM;
+  e.g.,][]{ward07disputes,ward07persistent,kirkland12multimember}.
+
+The ERGM and the SAOM both account for dependencies using an approach
+similar to that used to control for unmeasured confounding variables
+in regression analyses. The researcher specifies a set of dependencies
+that (s)he hypothesizes to be important to the network. These
+dependencies are then explicitly included in a model that
+simultaneously represents the observed covariates of interest. In
+contrast, the LSM takes a different approach and uses a latent spatial
+embedding to control for unmeasured confounding network structure. The
+LSM therefore has an advantage over the ERGM and the SAOM in that the
+researcher does not need to hypothesize a set of dependencies that may
+be important. However, this advantage is contingent upon the LSM's
+ability to identify confounding network structure that would otherwise
+be attributed to the observed covariates.
+
+Despite the growing popularity of these models, there have been few
+studies that investigate their performance at accounting for
+unmeasured confounding network structure. In this article, we focus on
+the LSM and study its ability to reduce estimation error and inference
+error using a latent spatial embedding of network structure.
+
+
+TODO: Something about type I error.
+
+\section{The Latent Space Model}
+
+What the LSM is and why it was developed.
+
+What the LSM is used for (currently in 1, 1.1, and 2).
+
+Concerns re. its use, type I and II error, type II addressed.
+
+\section{}
+
+
+\section*{Acknowledgements}
+
+This work was supported in part by National Science Foundation (NSF)
+grants DGE-1144860, SES-1558661, SES-1619644, and CISE-1320219. Any
+opinions, findings, and conclusions or recommendations are those of
+the authors and do not necessarily reflect those of the sponsor.
+
+\bibliography{references}
+
+\end{document}
