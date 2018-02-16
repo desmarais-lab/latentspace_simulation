@@ -120,16 +120,15 @@
 
 \noindent Due to the complex interdependence found in network data,
 networks scholars draw upon an increasingly sophisticated
-toolkit for statistical inference. The Latent space model (LSM) for
+toolkit for building models of networks. The Latent space model (LSM) for
 network data combines a conventional regression model with an embedding of actors in a latent space. In the LSM, the expected relationship between two actors is dependent on observed covariates and a function of their positions in the latent space. In numerous applications, researchers have assumed
 that the latent spatial embedding can control for latent
-confounding structure. Latent confounding structure includes unmeasured actor attributes that can be represented spatially, as well as network dependencies such as reciprocity and transitivity. There has been little research that considers the LSM's
-performance in adjusting for latent confounding structure. We investigate the
+confounding structure. latent network structure includes unmeasured actor attributes that can be represented spatially, as well as network dependencies such as reciprocity and transitivity. There has been little research that considers the LSM's
+performance in adjusting for latent network structure when making inferences about covariates. We investigate the
 LSM's performance via a simulation study. In the presence of an
 unmeasured actor attribute that can be modeled perfectly using a latent space,
-we find that the LSM exhibits unacceptable levels of bias and Type 1 error for inferences on measured covariates. However, the prediction error of the LSM when latent confounding structure is present is substantially lower in most cases. We
-conclude that the LSM is most appropriate for exploration or
-prediction, unless it can be assumed that all potential confounders have been measured.
+we find that the LSM exhibits unacceptable levels of bias and Type 1 error for inferences on measured covariates. However, the prediction error of the LSM when latent network structure is present is substantially lower in most cases. We
+conclude that the LSM is most appropriate for exploratory or predictive modeling, unless it can be assumed that all potential confounders have been measured.
 %\footnote{This work was supported by National Science Foundation
 %grants DGE-1144860, SES-1558661, SES-1619644, and CISE-1320219. Any
 %opinions, findings, and conclusions or recommendations are those of
@@ -140,38 +139,33 @@ prediction, unless it can be assumed that all potential confounders have been me
 % Description of the possible challenges
 \section{Introduction}
 
-Inferential analysis of political network data has grown increasingly
-sophisticated in recent years. Political networks scholars are well
-versed in the risks associated with ignoring unmodeled network
-structure. Dependencies such as reciprocity, transitivity, and
-homophily---if not accounted for---can lead to biased estimates and
+Statistical models in which the outcome data (i.e., the dependent variable) consists of network data have proliferated, and grown increasingly
+sophisticated, over the past decade. The defining feature of network data that renders conventional statistical models---namely, regression models---inappropriate, is that ties in a network exhibit complex forms of interdependence such as reciprocity, transitivity, and
+homophily. If not accounted for, these complex dependencies can lead to biased estimates and
 errors in hypothesis testing, much in the way that omitted variable
 bias can affect results in conventional regression models
-\citep{ward2007disputes,kinne2014,cranmerisq,hays2010spatial}. A
+\citep{ward2007disputes,kinne2014,cranmerisq,hays2010spatial}.  We refer to network dependencies that cannot be modeled with observed covariates as {\em latent network structure}. A
 number of statistical modeling frameworks have been proposed to
-account for confounding structure in network data that cannot be
-modeled with observed covariates. These include the exponential random
-graph model (ERGM) \citep[e.g.,
+account for latent network structure in network data. These include, but are not limited to, the exponential random
+graph model (ERGM) {\bf [UPDATE STRING CITES TO LOOK OUTSIDE POLISCI]} \citep[e.g.,
 ][]{lazer2010,cranmer2011pa,desmarais2012psj}, the latent space model
 (LSM) \citep[e.g.,
 ][]{ward2007disputes,ward2007persistent,kirkland2012multimember}, and
 the stochastic actor oriented model (SAOM) \citep[e.g.,
 ][]{berardo2010ajps,kinne2014}.
 
-The approach to adjusting for dependencies in the ERGM and SAOM is
+The approach to adjusting for latent network structure in the ERGM and SAOM is
 quite similar to adjusting for confounding covariates in regression
 modeling. The researcher specifies a set of dependencies that (s)he
 hypothesizes to be important in the generative model for the
 network. These dependencies are then explicitly included in a model
 that simultaneously represents the effects of observed covariates
 \citep{cranmer2011pa}. The LSM takes a different approach, which
-involves the incorporation of latent variables to model network
-structure. The LSM has an advantage over ERGM and SAOM in that
-researchers need not develop a set of hypothesized dependencies in
-order to model network structure that is not reflected in observed
-covariates. However, this advantage hinges upon the capacity for the
-LSM to discover unmodeled structure that could otherwise be attributed
-to the observed covariates.
+involves the incorporation of latent variables to model latent network structure. The LSM has an advantage over ERGM and SAOM in that
+researchers need not develop a precise set of hypothesized dependencies in
+order to model latent network structure. However, this advantage hinges upon the capacity for the
+LSM to differentiate the effects of latent network structure 
+from those of the observed covariates. 
 
 Despite their growing popularity, few studies exist that investigate
 the performance of these models in adjusting for confounding network
@@ -180,7 +174,7 @@ performance in reducing estimation and inferential errors regarding
 the effects of observed covariates via adjustment for confounding
 network structure. There are two reasons that using the LSM may lead
 to increased error---one may result in Type 1 inferential error, and
-the other in Type 2 error. First, if the unobserved (i.e., latent)
+the other in Type 2 error. First, if the latent
 network structure is truly correlated with the observed covariates,
 the unobserved structure that can be correlated with the observed
 variable may be attributed to the observed variable. Under this
@@ -190,31 +184,12 @@ inferences regarding the observed covariates remain subject to omitted
 variable bias, which leads to an inflated Type 1 inferential error
 rate. Second, the latent configurations inferred may result in a
 representation of the network wherein a node's position in the latent
-space is spuriously correlated with the observed covariates. Inferring
+space is spuriously correlated with the observed covariates (i.e., the latent space crowds out the effects of observed covariates). Inferring
 latent variables that are correlated with observed covariates would
 lead to reduced efficiency in estimating observed covariate effects,
 and result in a high Type 2 error rate.
 
-Recent work on the LSM has explicitly addressed the potential problem
-of Type 2 error. The AMEN framework for latent variable modeling of
-networks is explicitly designed to model structure in the
-residuals---structure that is leftover after accounting for the
-observed covariates. \citet[p. 43]{hoff2015dyadic} notes that the
-latent factors represent patterns in the network that, ``aren't
-explained by the known regressors.''
-\citet[pp. 12--13]{minhas2016inferential} also describe how AMEN is
-designed such that the multiplicative effects, ``capture higher-order
-dependence patterns that are left over [in the stochastic linear
-  predictor] after accounting for any known covariate information.''
-The approach incorporated in AMEN is effective at avoiding correlation
-between the observed covariates and latent factors, which would result
-in Type 2 error. However, there have been no methodological
-innovations to avoid Type 1 error in latent variable modeling with
-networks. Through a simulation study we find that the LSM, as
-implemented in both the R \citep{R} packages \texttt{latentnet}
-\citep{latentnet} and \texttt{amen} \citep{amen}, performs poorly in
-terms of Type 1 error when the unmeasured network structure confounds
-the relationship between the observed covariate and the network.
+%HERE, ADD OVERVIEW OF OUR PAPER
 
 % CUT: not sure where to put this
 %Despite the power of the LSM in representing network structure that is
@@ -238,6 +213,9 @@ $$\mathbb{E}(y_{ij} | x_{ij}) = g^{-1}(\alpha + \beta x_{ij} - |z_i - z_j|).$$
 This ``Euclidean'' LSM is the original form proposed by
 \citet{hoff2002latent}, and, as far as we can tell, the most commonly
 used specification in the literature.
+
+
+
 
 % CUT: what's the point of this paragraph?
 %However, the LSM has been extended in several important
@@ -528,6 +506,30 @@ of the marginal posterior distribution
 \cite{turkkan1993computation}. We consider $\beta$ to be statistically
 significant at the 0.05 level if the 95\% credible interval excludes
 0.
+
+
+
+
+Recent work on the LSM has explicitly addressed the potential problem
+of Type 2 error. The AMEN framework for latent variable modeling of
+networks is explicitly designed to model structure in the
+residuals---structure that is leftover after accounting for the
+observed covariates. \citet[p. 43]{hoff2015dyadic} notes that the
+latent factors represent patterns in the network that, ``aren't
+explained by the known regressors.''
+\citet[pp. 12--13]{minhas2016inferential} also describe how AMEN is
+designed such that the multiplicative effects, ``capture higher-order
+dependence patterns that are left over [in the stochastic linear
+  predictor] after accounting for any known covariate information.''
+The approach incorporated in AMEN is effective at avoiding correlation
+between the observed covariates and latent factors, which would result
+in Type 2 error. However, there have been no methodological
+innovations to avoid Type 1 error in latent variable modeling with
+networks. Through a simulation study we find that the LSM, as
+implemented in both the R \citep{R} packages \texttt{latentnet}
+\citep{latentnet} and \texttt{amen} \citep{amen}, performs poorly in
+terms of Type 1 error when the unmeasured network structure confounds
+the relationship between the observed covariate and the network.
 
 We also repeat this simulation study using \texttt{amen}
 \citep{hoff2015dyadic, minhas2016inferential}. We omit the Poisson
