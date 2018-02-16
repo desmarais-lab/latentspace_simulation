@@ -119,21 +119,17 @@
 \begin{abstract}
 
 \noindent Due to the complex interdependence found in network data,
-political networks scholars draw upon an increasingly sophisticated
-toolkit for statistical inference. The latent space model (LSM) for
-network data combines a generalized linear model with a latent spatial
-embedding of the network. In numerous applications, researchers assume
-that the latent spatial embedding can control for unmeasured
-confounding structure that is related to the values of edges in the
-network. There has been little to no research that considers the LSM's
-performance in adjusting for unmeasured structure. We investigate the
+networks scholars draw upon an increasingly sophisticated
+toolkit for statistical inference. The Latent space model (LSM) for
+network data combines a conventional regression model with an embedding of actors in a latent space. In the LSM, the expected relationship between two actors is dependent on observed covariates and a function of their positions in the latent space. In numerous applications, researchers have assumed
+that the latent spatial embedding can control for latent
+confounding structure. Latent confounding structure includes unmeasured actor attributes that can be represented spatially, as well as network dependencies such as reciprocity and transitivity. There has been little research that considers the LSM's
+performance in adjusting for latent confounding structure. We investigate the
 LSM's performance via a simulation study. In the presence of an
-unmeasured covariate that can be modeled using a latent space,
-estimation and inferential error remain high under even moderate
-confounding. However, the prediction error of the LSM when unmeasured
-network structure is present is substantially lower in most cases. We
+unmeasured actor attribute that can be modeled perfectly using a latent space,
+we find that the LSM exhibits unacceptable levels of bias and Type 1 error for inferences on measured covariates. However, the prediction error of the LSM when latent confounding structure is present is substantially lower in most cases. We
 conclude that the LSM is most appropriate for exploration or
-prediction.
+prediction, unless it can be assumed that all potential confounders have been measured.
 %\footnote{This work was supported by National Science Foundation
 %grants DGE-1144860, SES-1558661, SES-1619644, and CISE-1320219. Any
 %opinions, findings, and conclusions or recommendations are those of
