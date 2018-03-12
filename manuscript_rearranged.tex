@@ -285,7 +285,7 @@ has presented the LSM as capable of adjusting for unmeasured
 confounding structure. However, as we document below, many researchers
 who have applied the LSM claim that it has the capacity to adjust for
 confounders, and use it for this purpose. For example
-\citet{ward2007disputes}, in a high profile example, argue that the
+\citet{ward2007disputes} argue that the
 the LSM improves inference about the effects of democracy,
 international trade, and participation in international organizations
 on the probability of inter-state conflict.
@@ -299,9 +299,7 @@ on the probability of inter-state conflict.
   international conflict'' \citep[p. 585]{ward2007disputes}
 \end{quote}
 
-Likewise, similar claims are made in \citet{dorff2013networks,
-  cao2013democracies, ward2013gravity, kirkland2012multimember}, and
-\citet{cao2016transnational}.
+This example is representative of justifications for using the LSM that we see in other work in political science and international relations.
 
 \begin{quote}
 ``For the most part, however, most dyadic research in international
@@ -345,10 +343,16 @@ Likewise, similar claims are made in \citet{dorff2013networks,
   captured by latent vectors...'' \citep[p. 17]{cao2016transnational}.
 \end{quote}
 
-The above examples are drawn from political science, but the results
-of our analysis have implications in other fields. We see a similar
-logic for using the LSM articulated in recent work in ecology by
-\citet[p. 989]{nomano2015unrelated}.
+
+\noindent We also see examples in sociology,
+
+ \begin{quote} ``the models include latent space positions that implicitly control for structural aspects of networks, such as reciprocity and centrality, allowing for estimation of covariate effects (Hoff, Raftery, and Handcock 2002).'' \citep[p. 157]{spillane2017elephant}
+ \end{quote}
+ 
+ \begin{quote} ``Higher order dependencies can be taken into account by assigning each country a position in a ?social space,? based on its (unobserved) characteristics and the presence of other ties. Conditional independence between observations can then subsequently be assumed, given the countries? latent position within the social space (Hoff et al., 2002).'' \citep[p. 107]{berlusconi2017determinants}
+ \end{quote}
+
+\noindent in ecology,
 
 \begin{quote}
 ``\ldots can create artificially exaggerated synchrony rates
@@ -357,36 +361,19 @@ logic for using the LSM articulated in recent work in ecology by
   latent space model (Krivitsky et al. 2009) was used to examine the
   propensities for synchrony between helper males and the primary male
   while accounting for the variability deriving from the
-  transitivity.''
+  transitivity.'' \citep[p. 989]{nomano2015unrelated}
 \end{quote}
+\noindent and in the business literature.
 
-
-And in sociology \citet[p. 157]{spillane2017elephant},
-
- \begin{quote} ``the models include latent space positions that implicitly control for structural aspects of networks, such as reciprocity and centrality, allowing for estimation of covariate effects (Hoff, Raftery, and Handcock 2002).''
- \end{quote}
- 
- and  \citet[p. 107]{berlusconi2017determinants}
- 
- \begin{quote} ``Higher order dependencies can be taken into account by assigning each country a position in a ?social space,? based on its (unobserved) characteristics and the presence of other ties. Conditional independence between observations can then subsequently be assumed, given the countries? latent position within the social space (Hoff et al., 2002).''
- \end{quote}
-
-
-
-
-Though this list of quotations is by no means complete, the last
-example to which we point comes from the business literature, and uses
-the bilinear form of the latent space model
-\citep[p. 7]{dass2011impact}.
 
 \begin{quote}
 ``This model controls for higher order team dynamics using the
   bilinear component $z_i'z_j$ and also allows both trustor
   ($x_{tor,i}$ ) and trusted ($x_{ted,j}$ ) characteristics to be
-  investigated along with the dyadic covariates ($x_{d,i,j}$).''
+  investigated along with the dyadic covariates ($x_{d,i,j}$).'' \citep[p. 7]{dass2011impact}
 \end{quote}
 
-The latent space framework offers an attractive general purpose approach to adjusting for confounding structure in network models, as, unlike the major alternative framework for network modeling (ERGM), using the latent space model does not require the researcher to specify a set of network dependencies for which to control.  However, the latent variables in the LSM are free parameters that will be inferred to explain variation that is not explained by the observed covariates. As such, the LSM framework is not designed to encourage latent network structure to displace observed covariate effects when the latent structure includes confounders. As we note above, recent work on latent space approaches for network modeling describes exactly this modeling characteristic---that the latent variables are used to explain variation that cannot be explained by observed covariates. In a simulation study that follows, we examine whether the LSM can be used to adjust for confounding in a simple and ideal scenario..
+The latent space framework offers an attractive general purpose approach to adjusting for confounding structure in network models, as, unlike the major alternative framework for network modeling (ERGM), using the latent space model does not require the researcher to specify a set of network dependencies for which to control.  However, the latent variables in the LSM are free parameters that will be inferred to explain variation that is not explained by the observed covariates. In a simulation study that follows, we examine whether the LSM can be used to adjust for confounding in a simple and ideal scenario..
 
 \section{Simulation Study}
 
@@ -397,15 +384,14 @@ represented using a Euclidean latent space. We are particularly
 interested in whether the LSM can adjust for confounding when the
 confounding variable is unmeasured. In the simulation design, we study
 how the level of confounding affects the performance of the LSM
-relative to the GLM. We evaluate performance in terms of bias and
-inferential error. Since the LSM has also been used for predictive
-model selection, we also evaluate predictive performance
-\citep{ward2013gravity, fletcher2011social, fletcher2013network,
+relative to the generalized linear model (GLM). We evaluate performance in terms of bias and
+inferential error. Since the LSM has also been used for prediction,  we also evaluate predictive performance
+\citep[e.g., ]{ward2013gravity, fletcher2011social, fletcher2013network,
   chiu2011unifying}.
 
 \subsection{Simulation Design}
 
-+For simplicity and computational efficiency we consider a unidimensional latent space, that is, we create a single unmeasured variable that can be represented using the Euclidean parameterization of the LSM. We expect our results to generalize to higher dimensions and other variants of the LSM since each variant involves the use of unconstrained latent variables to represent unmeasured network structure. To generate an observed covariate that exhibits a controllable degree of colinearity with the latent network structure we follow a four-step process. First, we simulate unidimensional positions for each node, drawing from a standard normal distribution, and calculate the Euclidean distance $\mathbf{d}$ between each pair of positions. Second, we generate a target covariance matrix ($\Sigma$) using the $c$-vine method of \cite{lewandowski2009generating} which generates a uniform draw from the space of positive-definite matrices. The $c$-vine method makes use of a parameter $\eta$, which when equal to $1$ generates draws from uniformly from the space of positive-definite matrices, making the correlation between the latent positions and the measured covariate 0 in expectation. As $\eta$ increases above $1$ draws of $\Sigma$ have increasingly weak correlation\footnote{We show the distribution of correlations under each value of $\eta$ used in our simulation in Figure \ref{fig:vine}.}. Third, given the target covariance matrix ($\Sigma$) among the covariates and distances, $\langle \mathbf{x}, \mathbf{d} \rangle$, we derive the conditional mean vector and covariance, assuming that $\mathbf{x}$ has a normal distribution given $\mathbf{d}$ (see \cite[pp. 116--117]{eaton1983} for the conditional normal derivation).
+For simplicity and computational efficiency we consider a one-dimensional latent space. That is, we create a single unmeasured variable that can be represented using the Euclidean distance between two nodes in a one-dimensional space. We expect our results to generalize to higher dimensions and other variants of the LSM since the tendency for latent variables to be used in explaining structure that cannot be attributed covariates is universal with respect to both the dimension of the latent space and the form of the LSM. [HERE] To generate an observed covariate that exhibits a controllable degree of colinearity with the latent network structure we follow a four-step process. First, we simulate one-dimensional positions for each node, drawing from a standard normal distribution, and calculate the Euclidean distance (i.e., absolute distance) $\mathbf{d}$ between each pair of positions. Second, we generate a target covariance matrix ($\Sigma$) using the $c$-vine method of \cite{lewandowski2009generating} which generates a uniform draw from the space of positive-definite matrices. The $c$-vine method makes use of a parameter $\eta$, which when equal to $1$ generates draws from uniformly from the space of positive-definite matrices, making the correlation between the latent positions and the measured covariate 0 in expectation. As $\eta$ increases above $1$ draws of $\Sigma$ have increasingly weak correlation\footnote{We show the distribution of correlations under each value of $\eta$ used in our simulation in Figure \ref{fig:vine}.}. Third, given the target covariance matrix ($\Sigma$) among the covariates and distances, $\langle \mathbf{x}, \mathbf{d} \rangle$, we derive the conditional mean vector and covariance, assuming that $\mathbf{x}$ has a normal distribution given $\mathbf{d}$ (see \cite[pp. 116--117]{eaton1983} for the conditional normal derivation).
 +Fourth, we simulate $x$ as a normal random variable with the respective conditional means and covariance. Finally we standardize $x$ to have zero mean and unit variance to ensure that the scale of estimation errors is comparable across simulations.
 
 We consider three exponential family distributions from which the adjacency matrix entries are drawn: Gaussian, Bernoilli, and Poisson. We also vary the size of the network under study, considering networks with $n = 25, 50,$ and $100$ nodes. To vary the degree of confounding attributable to the latent positions, we consider three values of the collinearity parameter $\eta$: $1$, $100$, and $1,000,000$. Here  where $\eta = 1$ gives a matrix where the correlation is in expectation $.5$, $\eta = 100$ results in moderate collinearity between the observed covariate and the latent distances, and $\eta = 1,000,000$ corresponds to independence between the observed covariate and the latent distances. See Figure \ref{fig:vine} for the distribution of the absolute value of the correlation generated at each value of $\eta$.
