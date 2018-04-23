@@ -375,6 +375,29 @@ This example is representative of justifications for using the LSM that we see i
 
 The latent space framework offers an attractive general purpose approach to adjusting for confounding structure in network models, as, unlike the major alternative framework for network modeling (ERGM), using the latent space model does not require the researcher to specify a set of network dependencies for which to control.  However, the latent variables in the LSM are free parameters that will be inferred to explain variation that is not explained by the observed covariates. In a simulation study that follows, we examine whether the LSM can be used to adjust for confounding in a simple and ideal scenario..
 
+
+Recent work on the LSM has explicitly addressed the potential problem
+of Type 2 error. The AMEN framework for latent variable modeling of
+networks is explicitly designed to model structure in the
+residuals---structure that is leftover after accounting for the
+observed covariates. \citet[p. 43]{hoff2015dyadic} notes that the
+latent factors represent patterns in the network that, ``aren't
+explained by the known regressors.''
+\citet[pp. 12--13]{minhas2016inferential} also describe how AMEN is
+designed such that the multiplicative effects, ``capture higher-order
+dependence patterns that are left over [in the stochastic linear
+  predictor] after accounting for any known covariate information.''
+The approach incorporated in AMEN is effective at avoiding correlation
+between the observed covariates and latent factors, which would result
+in Type 2 error. However, there have been no methodological
+innovations to avoid Type 1 error in latent variable modeling with
+networks. Through a simulation study we find that the LSM, as
+implemented in both the R \citep{R} packages \texttt{latentnet}
+\citep{latentnet} and \texttt{amen} \citep{amen}, performs poorly in
+terms of Type 1 error when the unmeasured network structure confounds
+the relationship between the observed covariate and the network.
+
+
 \section{Simulation Study}
 
 We use a simulation study to evaluate the LSM's performance at
@@ -398,13 +421,13 @@ For simplicity and computational efficiency we consider a one-dimensional latent
 
  \item Generate a correlation coefficient $(\rho)$ on the interval $(-1,1)$ as $\rho = 1-2\times u$, where $u \sim  \text{Beta}(\eta,\eta)$. $\eta$ is used to control the magnitude of the correlation coefficient. The smaller the value of $\eta$, the larger the absolute magnitude of the correlation coefficient, in expectation. This relationship is illustrated in Figure \ref{fig:vine}. When $\eta = 1$, the correlations generated exhibit the expected uniform distribution. When $\eta = 1,000,000$, each correlation coefficient is approximately 0. \footnote{This methodology generalizes to higher dimensional correlation matrices as the `c-vine' method developed by \cite{lewandowski2009generating}, and implemented in the \R package \texttt{clusterGeneration} \citep{clusterGeneration}, which we use in our simulations.}
 
- \item Simulate $\mathbf{x} = \frac{\rho}{\sqrt{1-\rho^2}}\mathbf{d}+\mathbf{w},$ where $\mathbf{w} \sim N(0,1)$. This assures that the correlation between $\mathbf{x}$ and $\mathbf{d}$ is $\rho$.\footnote{This could be generalized to more than one covariate using the conditional normal distribution derived by \cite[pp. 116--117]{eaton1983}.}
+ \item Simulate the observed covariate $\mathbf{x} = \frac{\rho}{\sqrt{1-\rho^2}}\mathbf{d}+\mathbf{w},$ where $\mathbf{w} \sim N(0,1)$. This assures that the correlation between $\mathbf{x}$ and $\mathbf{d}$ is $\rho$.\footnote{This could be generalized to more than one covariate using the conditional normal distribution derived by \cite[pp. 116--117]{eaton1983}.}
  
- \item Finally we standardize $\mathbf{x} := \mathbf{x}/ \text{sd}(\mathbf{x})$ to have unit variance to ensure that the variance of $\mathbf{x}$ relative to $\mathbf{d}$ is unrelated to $\rho$. This is to assure that $\rho$ does not affect the efficiency with which the effect of $\mathbf{x}$ can be estimated through some property unrelated to the relationship between $\mathbf{x}$ and $\mathbf{d}$.
+ \item Finally, we standardize $\mathbf{x} := \mathbf{x}/ \text{sd}(\mathbf{x})$ to have unit variance to ensure that the variance of $\mathbf{x}$ relative to $\mathbf{d}$ is unrelated to $\rho$. This is to assure that $\rho$ does not affect the efficiency with which the effect of $\mathbf{x}$ can be estimated through some property unrelated to the relationship between $\mathbf{x}$ and $\mathbf{d}$.
 
 \end{enumerate} 
 
-We consider three exponential family distributions from which the adjacency matrix entries are drawn: Gaussian, Bernoilli, and Poisson. We also vary the size of the network under study, considering networks with $n = 25, 50,$ and $100$ nodes. To vary the degree of confounding attributable to the latent positions, we consider three values of the collinearity parameter $\eta$: $1$, $100$, and $1,000,000$. Here  where $\eta = 1$ gives a matrix where the correlation is in expectation $.5$, $\eta = 100$ results in moderate collinearity between the observed covariate and the latent distances, and $\eta = 1,000,000$ corresponds to independence between the observed covariate and the latent distances. See Figure \ref{fig:vine} for the distribution of the absolute value of the correlation generated at each value of $\eta$.
+We consider three exponential family distributions from which the adjacency matrix entries are drawn: Gaussian, Bernoilli, and Poisson.  We also vary the size of the network under study, considering networks with $n = 25, 50,$ and $100$ nodes. To vary the degree of confounding attributable to the latent positions, we consider three values of the collinearity parameter $\eta$: $1$, $100$, and $1,000,000$. Here  where $\eta = 1$ gives a matrix where the correlation is in expectation $.5$, $\eta = 100$ results in moderate collinearity between the observed covariate and the latent distances, and $\eta = 1,000,000$ corresponds to independence between the observed covariate and the latent distances. See Figure \ref{fig:vine} for the distribution of the absolute value of the correlation generated at each value of $\eta$.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figures/max_r_vine.png}
@@ -412,22 +435,21 @@ We consider three exponential family distributions from which the adjacency matr
 \end{figure}
 
 We consider the LSM with several different priors on the coefficient
-for the observed covariate and the latent space. We set the prior
+for the observed covariate ($\mathbf{x}$) and the latent space. We set the prior
 variance of $\beta$ to be either $1$ or $10$ and use a diffuse normal
 prior on the latent space.
 
 The LSM is estimated using the canonical implementation in the
 \texttt{latentnet} package in \texttt{R} \citep{latentnet}. For each
-iteration of the simulation, we run 10,000 burn in iterations,
+iteration of the simulation, we run 10,000 burn in iterations of the Metropolis-Hastings sampler in \texttt{latentnet},
 followed by 1,000,000 iterations of the sampler. Every 100th post burn
 in iteration is saved. Convergence in the log probability of the model
 is assessed using the Geweke diagnostic in the \texttt{coda} package
 \citep{coda, geweke1991evaluating}. If the convergence criterion is
 satisfied, the simulation continues to the next set of arguments,
 otherwise the number of iterations is doubled. If the convergence
-criterion is still not satisfied, then the aforementioned step in the
-simulation is flagged for review. However, this was not necessary in
-any cases. At each point in the simulation's parameter space, we
+criterion were still not satisfied, then the aforementioned step would be flagged for review. However, this was not necessary in
+any cases---all converged within 3,000,000 iterations. At each point in the simulation's parameter space, we
 execute 1,000 Monte Carlo iterations. \footnote{One of the primary
   difficulties in executing the above simulation design is the
   computational cost of estimating the LSM. We utilize the
@@ -445,7 +467,7 @@ $\mathbf{x}$ and $\mathbf{d}$ are independent: $\sqrt{\frac{3.28 +
 variance of a standard logistic distribution. We do this to adjust for
 bias in the coefficient estimate that arises due to the lack of a
 scale coefficient in logistic regression (See the derivation of the
-bias under an independent but omitted covariate in
+bias under an omitted orthogonal covariate in
 \cite{mood2010logistic}).
 
 For each combination of simulation conditions we evaluate the mean
@@ -453,42 +475,7 @@ square prediction error of the model on new edges drawn condtional on
 $\mathbf{x}$ and $\mathbf{d}$: $\frac{1}{n}\sum_{i=1}^{n}(y_{i} - \hat{y}_i)^2$, the bias of the estimated coefficient
 for the measured covariate $\frac{1}{n} \sum_{i=1}^n (\beta - \hat{beta})$, and the Type-1 and 2 error
 rates. These error rates are estimated by computing coverage: $\frac{1}{m} \sum_{i=1}^m\mathbb{I}(\beta \in \text{HPD}(\hat{\beta}_i))$, where $\text{HPD}(\hat{beta})$ is the region of highest posterior density which covers $95\%$ of the marginal posterior distribution and $m$ is the number of samples from said posterior \cite{turkkan1993computation}. When in the simulation $\beta = 0$, $1 - P(\text{coverage})$ gives the type-1 error rate, and $P(\text{coverage})$ givesthe type-2 error rate when $\beta = 1$. Hence we consider $\beta$ to be statistically
-significant at the 0.05 level if the 95\% credible interval excludes 0.
-
-
-
-
-Recent work on the LSM has explicitly addressed the potential problem
-of Type 2 error. The AMEN framework for latent variable modeling of
-networks is explicitly designed to model structure in the
-residuals---structure that is leftover after accounting for the
-observed covariates. \citet[p. 43]{hoff2015dyadic} notes that the
-latent factors represent patterns in the network that, ``aren't
-explained by the known regressors.''
-\citet[pp. 12--13]{minhas2016inferential} also describe how AMEN is
-designed such that the multiplicative effects, ``capture higher-order
-dependence patterns that are left over [in the stochastic linear
-  predictor] after accounting for any known covariate information.''
-The approach incorporated in AMEN is effective at avoiding correlation
-between the observed covariates and latent factors, which would result
-in Type 2 error. However, there have been no methodological
-innovations to avoid Type 1 error in latent variable modeling with
-networks. Through a simulation study we find that the LSM, as
-implemented in both the R \citep{R} packages \texttt{latentnet}
-\citep{latentnet} and \texttt{amen} \citep{amen}, performs poorly in
-terms of Type 1 error when the unmeasured network structure confounds
-the relationship between the observed covariate and the network.
-
-We also repeat this simulation study using \texttt{amen}
-\citep{hoff2015dyadic, minhas2016inferential}. We omit the Poisson
-family, and, due to the computational cost of the simulation, we
-consider only networks with 25 nodes or 100 nodes. Rather than
-constructing an omitted variable as described above, we draw from a
-standard normal distribution $\mathbf{u}$, and, because we are
-considering symmetric networks, take the outer product of $\mathbf{u}$
-with itself to construct the latent factor. We take 100,000 MCMC
-samples after 500 burn-in iterations, and we assess convergence using
-the diagnostic of \cite{raftery1992practical}.
+significant at the 0.05 level if the 95\% credible interval excludes 0. 
 
 \subsection{Results}
 
@@ -506,7 +493,9 @@ observed covariates and latent distances are confounded.  For both the
 GLM and the LSM, bias decays rapidly as the degree of correlation
 between the distances and the measured covariate decreases. In
 \ref{fig:estimation_nls} we can see that when there is no omitted
-network structure, the LSM exhibits bias greater than that of the GLM.
+network structure, the LSM exhibits bias greater than that of the GLM.\footnote{ We also repeat this simulation study using \texttt{amen}
+\citep{hoff2015dyadic, minhas2016inferential,amen},  which is a software implementation of a much more recently developed algorithm for latent variable modeling of networks. The results of the simulations using \texttt{amen} , which are in agreement with the results with \texttt{latentnet}, are in the appendix.}
+
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figures/estimation_ls.png}
@@ -555,7 +544,10 @@ The key recommendation arising from our results is that researchers not use the 
 
 \newpage
 \section*{Online Appendix}
-Below we replicate the simulation study results figures using the results from our simulation with the recently developed \texttt{amen} package. Note that these simulations exclude (1) the Poisson family, which is not available in the \texttt{amen} package, and (2) the 50-node networks, which we left out in the interest of lessening the computational burden of the simulation.
+Below we replicate the simulation study results figures using the results from our simulation with the recently developed \texttt{amen} package.  The latent variable is constructed differently in \texttt{amen} than in the LSM.  Rather than
+taking the Euclidean distance between two nodes' latent variables, in the simulation with \texttt{amen} we use the outer product between two nodes' latent variables (just the scalar product in our case, since the latent variable has one dimension). Since inference with \texttt{amen} tends to converge much faster than with the LSM, we take 100,000 MCMC
+samples after 500 burn-in iterations, and we assess convergence using
+the diagnostic of \cite{raftery1992practical}. Note that these simulations exclude (1) the Poisson family, which is not available in the \texttt{amen} package, and (2) the 50-node networks, which we left out in the interest of lessening the computational burden of the simulation.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figures/estimation_ls_amen.png}
